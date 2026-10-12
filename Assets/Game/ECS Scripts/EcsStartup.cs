@@ -9,12 +9,13 @@ public sealed class EcsStartup : MonoBehaviour
     private void Start()
     {
         ProtoWorld world = new ProtoWorld(
-            new RotationAspect()
+            new BaseAspect()
         );
 
         _systems = new ProtoSystems(world)
             .AddModule(new UnityModule())
-            .AddSystem(new CubeRotationSystem());
+            .AddModule(new CubeRotationModule())
+            .AddModule(new UnityUpdateModule());
 
         _systems.Init();
     }

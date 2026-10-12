@@ -7,7 +7,6 @@ using UnityEngine;
 public sealed class RotationAspect : IProtoAspect
 {
     public ProtoPool<CubeRotationComponent> CubeRotationPool;
-    public ProtoIt CubeRotationIterator;
 
     private ProtoWorld _world;
 
@@ -19,18 +18,10 @@ public sealed class RotationAspect : IProtoAspect
 
         CubeRotationPool = new ProtoPool<CubeRotationComponent>();
         world.AddPool(CubeRotationPool);
-
-        CubeRotationIterator = new ProtoIt(
-            new[]
-            {
-                typeof(CubeRotationComponent)
-            }
-        );
     }
 
     public void PostInit()
     {
-        CubeRotationIterator.Init(_world);
     }
 
     public ProtoWorld World()
@@ -41,18 +32,8 @@ public sealed class RotationAspect : IProtoAspect
 
 
 // Компоненты аспекта пишем под аспектом
-[Serializable, ProtoUnityAuthoring]
-public struct CubeRotationComponent : IProtoUnityAuthoring
+[ProtoUnityAuthoring]
+public struct CubeRotationComponent
 {
     public bool isRotating;
-
-    // Ссылка на Unity-объект, соответствующий ECS-сущности с этим компонентом.
-    public GameObject View;
-
-    public void Authoring(
-        in ProtoPackedEntityWithWorld entity,
-        GameObject go)
-    {
-        View = go;
-    }
 }
