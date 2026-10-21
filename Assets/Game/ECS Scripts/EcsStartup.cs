@@ -7,6 +7,7 @@ public sealed class EcsStartup : MonoBehaviour
 {
     private IProtoSystems _systems;
     private InputSystem_Actions actions;
+    [SerializeField] private MouseSelector mouseSelector;
 
     private void Start()
     {
@@ -15,22 +16,24 @@ public sealed class EcsStartup : MonoBehaviour
         );
 
         CommandQueue fullQueue = new CommandQueue();
-        IComandAdder adder = fullQueue;
-        IComandPopper popper = fullQueue;
+        ICommandAdder adder = fullQueue;
+        ICommandPopper popper = fullQueue;
         actions = new();
         actions.Enable();
 
         _systems = new ProtoSystems(world)
-            .AddService(adder,typeof(IComandAdder))
-            .AddService(popper,typeof(IComandPopper))
-            .AddService(actions, typeof(InputSystem_Actions))
-            .AddModule(new AutoInjectModule())
+            .AddModule(new AutoInjectModule(true))
+            .AddService(adder,typeof(ICommandAdder))
+            .AddService(popper,typeof(ICommandPopper))
+            .AddService(actions, typeof(InputSystem_Actions))            
+            .AddService(mouseSelector)
             .AddModule(new UnityModule())
             .AddModule(new CameraMovementModule())
             .AddModule(new CubeRotationModule())
             .AddModule(new UnityUpdateModule());
 
         _systems.Init();
+        mouseSelector.Init(_systems);
     }
 
     private void Update()

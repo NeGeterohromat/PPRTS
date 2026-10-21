@@ -4,15 +4,15 @@ using UnityEngine;
 
 public class ToggleRotatingCommand : ICommand
 {
-    private int entityID;
-    public ToggleRotatingCommand(int entityId)
+    private ProtoPackedEntityWithWorld entityWithWorld;
+    public ToggleRotatingCommand(ProtoPackedEntityWithWorld entity)
     {
-        entityID = entityId;
+        entityWithWorld = entity;
     }
 
-    public void Execute(Dictionary<int, ProtoPackedEntityWithWorld> dict)
+    public void Execute()
     {
-        dict[entityID].TryUnpack(out var world, out var entity);
+        entityWithWorld.TryUnpack(out var world, out var entity);
         var aspect = (RotationAspect)world.Aspect(typeof(RotationAspect));
         if (aspect.CubeRotationPool.Has(entity))
         {
