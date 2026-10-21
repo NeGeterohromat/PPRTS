@@ -1,10 +1,12 @@
 using Leopotam.EcsProto;
+using Leopotam.EcsProto.QoL;
 using Leopotam.EcsProto.Unity;
 using UnityEngine;
 
 public sealed class EcsStartup : MonoBehaviour
 {
     private IProtoSystems _systems;
+    private InputSystem_Actions actions;
 
     private void Start()
     {
@@ -12,8 +14,19 @@ public sealed class EcsStartup : MonoBehaviour
             new BaseAspect()
         );
 
+        CommandQueue fullQueue = new CommandQueue();
+        IComandAdder adder = fullQueue;
+        IComandPopper popper = fullQueue;
+        actions = new();
+        actions.Enable();
+
         _systems = new ProtoSystems(world)
+            .AddService(adder,typeof(IComandAdder))
+            .AddService(popper,typeof(IComandPopper))
+            .AddService(actions, typeof(InputSystem_Actions))
+            .AddModule(new AutoInjectModule())
             .AddModule(new UnityModule())
+            .AddModule(new CameraMovementModule())
             .AddModule(new CubeRotationModule())
             .AddModule(new UnityUpdateModule());
 

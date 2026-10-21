@@ -12,14 +12,12 @@ public class UnityUpdateAspect : IProtoAspect
     public ProtoPool<NeedTransformUpdateEventComponent> NeedTransformUpdateEventPool = new();
     public ProtoPool<TransformDataComponent> TransformDataPool = new();
     public ProtoPool<GameObjectComponent> GameObjectPool = new();
-    public ProtoPool<CameraComponent> CameraPool = new();
     public ProtoPool<NewlyCreatedComandableEntityEventComponent> NewlyCreatedComandableEntityEventPool = new();
     public ProtoPool<NewlyDeletedComandableEntityEventComponent> NewlyDeletedComandableEntityEventPool = new();
     public ProtoPool<ComandableEntityTagComponent> ComandableEntityTagPool = new();
 
     public ProtoIt TransformUpdateIterator;
     public ProtoIt TransformDataIterator;
-    public ProtoIt CameraIterator;
     public ProtoIt NewlyCreatedComandableEntityIterator;
     public ProtoIt NewlyDeletedComandableEntityIterator;
 
@@ -33,7 +31,6 @@ public class UnityUpdateAspect : IProtoAspect
         world.AddPool(NeedTransformUpdateEventPool);
         world.AddPool(TransformDataPool);
         world.AddPool(GameObjectPool);
-        world.AddPool(CameraPool);
         world.AddPool(NewlyCreatedComandableEntityEventPool);
         world.AddPool(NewlyDeletedComandableEntityEventPool);
         world.AddPool(ComandableEntityTagPool);
@@ -50,11 +47,6 @@ public class UnityUpdateAspect : IProtoAspect
         {
             typeof(TransformDataComponent)
         });
-
-        CameraIterator = new(new[] 
-        {
-            typeof(CameraComponent)
-        });
         NewlyCreatedComandableEntityIterator = new(new[] { typeof(NewlyCreatedComandableEntityEventComponent) });
         NewlyDeletedComandableEntityIterator = new(new[] { typeof(NewlyDeletedComandableEntityEventComponent) });
     }
@@ -63,7 +55,6 @@ public class UnityUpdateAspect : IProtoAspect
     {
         TransformUpdateIterator.Init(_world);
         TransformDataIterator.Init(_world);
-        CameraIterator.Init(_world);
         NewlyCreatedComandableEntityIterator.Init(_world);
         NewlyDeletedComandableEntityIterator.Init(_world);
     }
@@ -74,9 +65,9 @@ public class UnityUpdateAspect : IProtoAspect
     }
 }
 
-public struct NeedTransformUpdateByCameraEventComponent { }
+public struct NeedTransformUpdateByCameraEventComponent { } // Близко ли камера
 
-public struct NeedTransformUpdateEventComponent { }
+public struct NeedTransformUpdateEventComponent { } // А менялась ли вообще позиция объекта
 
 [ProtoUnityAuthoring]
 public struct TransformDataComponent
@@ -96,19 +87,6 @@ public struct GameObjectComponent : IProtoUnityAuthoring
         GameObject go)
     {
         Obj = go;
-    }
-}
-
-[ProtoUnityAuthoring]
-public struct CameraComponent : IProtoUnityAuthoring
-{
-    public GameObject Camera;
-
-    public void Authoring(
-        in ProtoPackedEntityWithWorld entity,
-        GameObject go)
-    {
-        Camera = go;
     }
 }
 

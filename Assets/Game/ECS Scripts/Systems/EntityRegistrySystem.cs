@@ -9,7 +9,7 @@ public class EntityRegistrySystem : IProtoInitSystem, IProtoRunSystem
     private ProtoWorld _world;
     private UnityUpdateAspect _aspect;
 
-    private CommandQueue _commandQueue = CommandQueue.FullAddPopInstance;
+    [DI] private IComandPopper _commandQueue;
     // Словарь для быстрого поиска
     private Dictionary<int, ProtoPackedEntityWithWorld> GameIdToEntity;
 
