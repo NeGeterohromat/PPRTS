@@ -1,4 +1,4 @@
-using Leopotam.EcsProto;
+п»їusing Leopotam.EcsProto;
 using Leopotam.EcsProto.QoL;
 using UnityEngine;
 
@@ -9,7 +9,10 @@ public class ConsumptionSystem : IProtoInitSystem, IProtoRunSystem
 
     public void Init(IProtoSystems systems)
     {
-        _consumers = new ProtoIt(new[] { typeof(Consumption), typeof(BuildingHealth) });
+        _consumers = new ProtoIt(new[] {
+            typeof(ConsumptionComponent),
+            typeof(BuildingHealthComponent)
+        });
         _consumers.Init(systems.World());
     }
 
@@ -26,7 +29,7 @@ public class ConsumptionSystem : IProtoInitSystem, IProtoRunSystem
 
             float needed = consumption.RatePerSecond * dt;
 
-            Debug.Log($"Потребление: {needed:F2} ед. ресурса {consumption.InputResource} за кадр");
+            Debug.Log($"Р—РґР°РЅРёРµ РїРѕС‚СЂРµР±РёР»Рѕ {needed:F2} {consumption.InputResource}");
         }
     }
 }
