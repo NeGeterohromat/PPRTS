@@ -80,8 +80,6 @@ public class MouseSelector : MonoBehaviour
 
     private void OnToggleRotate(InputAction.CallbackContext context)
     {
-        if (adder == null)
-            Debug.Log(null);
         foreach (var e in highlights.Keys)
         {
             adder.Add(new ToggleRotatingCommand(e));
