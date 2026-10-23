@@ -1,10 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CommandQueue : IComandAdder
+public class CommandQueue : ICommandAdder, ICommandPopper
 {
-    public static CommandQueue FullAddPopInstance { get; private set; } = new();
-    public static IComandAdder OnlyAddInstance { get; private set; } = FullAddPopInstance;
 
     private Queue<ICommand> commands = new();
 
@@ -15,7 +13,13 @@ public class CommandQueue : IComandAdder
     public bool HasElements() => commands.Count > 0;
 }
 
-public interface IComandAdder
+public interface ICommandAdder
 {
     public void Add(ICommand command);
+}
+
+public interface ICommandPopper
+{
+    public ICommand Pop();
+    public bool HasElements();
 }

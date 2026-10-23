@@ -1,29 +1,33 @@
 using Leopotam.EcsProto;
+using Leopotam.EcsProto.QoL;
 using UnityEngine;
 
 public class CheckCameraViewObjectsSystem : IProtoInitSystem, IProtoRunSystem
 {
-    private UnityUpdateAspect _aspect;
+    [DI] private UnityUpdateAspect unityAspect;
+    [DI] private CameraMovementAspect cameraAspect;
+    [DI] private ProtoIt CameraIt = new(new[] 
+    {
+        typeof(CameraTagComponent),
+        typeof(TransformDataComponent)
+    });
 
     public void Init(IProtoSystems systems)
     {
-        ProtoWorld world = systems.World();
-
-        _aspect = (UnityUpdateAspect)world.Aspect(typeof(UnityUpdateAspect));
     }
 
     public void Run()
     {
-        foreach (var camera in _aspect.CameraIterator)
+        foreach (var camera in CameraIt)
         {
-            ref var camComponent = ref _aspect.CameraPool.Get(camera);
-            foreach (var entity in _aspect.TransformDataIterator)
+            ref var cameraTransform = ref unityAspect.TransformDataPool.Get(camera);
+            foreach (var entity in unityAspect.TransformDataIterator)
             {
-                ref var transformComponent = ref _aspect.TransformDataPool.Get(entity);
-                if (IsObjectVisible(camComponent.Camera.transform.position,transformComponent.Position))
+                ref var transformComponent = ref unityAspect.TransformDataPool.Get(entity);
+                if (IsObjectVisible(cameraTransform.Position,transformComponent.Position))
                 {
-                    if (!_aspect.NeedTransformUpdateByCameraEventPool.Has(entity))
-                        _aspect.NeedTransformUpdateByCameraEventPool.Add(entity);
+                    if (!unityAspect.NeedTransformUpdateByCameraEventPool.Has(entity))
+                        unityAspect.NeedTransformUpdateByCameraEventPool.Add(entity);
                 }
             }
         }

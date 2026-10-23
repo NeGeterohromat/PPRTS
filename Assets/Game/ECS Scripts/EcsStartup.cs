@@ -1,4 +1,4 @@
-﻿using Leopotam.EcsProto;
+using Leopotam.EcsProto;
 using Leopotam.EcsProto.QoL;
 using Leopotam.EcsProto.Unity;
 using UnityEngine;
@@ -9,6 +9,8 @@ public sealed class EcsStartup : MonoBehaviour
     public GameAspect Aspect { get; private set; }
 
     private IProtoSystems _systems;
+    private InputSystem_Actions actions;
+    [SerializeField] private MouseSelector mouseSelector;
 
     private void Awake()
     {
@@ -17,17 +19,29 @@ public sealed class EcsStartup : MonoBehaviour
         Aspect = new GameAspect();
         ProtoWorld world = new ProtoWorld(Aspect);
 
+        CommandQueue fullQueue = new CommandQueue();
+        ICommandAdder adder = fullQueue;
+        ICommandPopper popper = fullQueue;
+        actions = new();
+        actions.Enable();
+
         _systems = new ProtoSystems(world)
-            .AddModule(new AutoInjectModule())
+            .AddModule(new AutoInjectModule(true))
+            .AddService(adder,typeof(ICommandAdder))
+            .AddService(popper,typeof(ICommandPopper))
+            .AddService(actions, typeof(InputSystem_Actions))            
+            .AddService(mouseSelector)
             .AddModule(new UnityModule())
-            .AddModule(new CubeRotationModule()) 
-            .AddModule(new UnityUpdateModule())  
+            .AddModule(new CameraMovementModule())
+            .AddModule(new CubeRotationModule())
+            .AddModule(new UnityUpdateModule());
 
             .AddSystem(new ProductionSystem())
             .AddSystem(new ConsumptionSystem());
 
         CreatePlayer();
         _systems.Init();
+        mouseSelector.Init(_systems);
     }
 
     private void CreatePlayer()

@@ -16,7 +16,7 @@ public class UnityUpdateModule : IProtoModule
 
     public void Init(IProtoSystems systems)
     {
-        systems.AddSystem(new EntityRegistrySystem())
+        systems.AddSystem(new CommandExecuteSystem())
             .AddSystem(new CheckCameraViewObjectsSystem())
             .AddSystem(new UnityUpdateTransformSystem());
     }
