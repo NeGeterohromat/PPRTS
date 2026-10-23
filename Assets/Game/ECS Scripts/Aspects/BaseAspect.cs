@@ -6,4 +6,5 @@ public class BaseAspect : ProtoAspectInject
     public RotationAspect RotationAspect;
     public UnityUpdateAspect UnityUpdateAspect;
     public CameraMovementAspect CameraMovementAspect;
+    public GameAspect GameAspect;
 }

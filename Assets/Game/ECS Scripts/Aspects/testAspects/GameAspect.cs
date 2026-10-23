@@ -14,18 +14,21 @@ public class GameAspect : BaseAspect
     public ProtoPool<PlayerInventoryComponent> Inventories;
 }
 
+[ProtoUnityAuthoring]
 public struct PositionComponent
 {
     public float X;
     public float Y;
 }
 
+[ProtoUnityAuthoring]
 public struct BuildingHealthComponent
 {
     public float Current;
     public float Max;
 }
 
+[ProtoUnityAuthoring]
 public struct ProductionComponent
 {
     public ResourceType OutputResource;

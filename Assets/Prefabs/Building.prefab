@@ -124,6 +124,33 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff6bc48074ccf524e9e10fafda4d71f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ResourceGeneratorAuthoring
+  _worldName: 
+  _authoringType: 0
+  _destroyAfterAuthoring: 0
+  Components:
+  - rid: 1121620039744880701
+  - rid: 1121620039744880702
+  - rid: 1121620039744880703
   ResourceToProduce: 1
   BaseRate: 5
   CycleTime: 2
+  references:
+    version: 2
+    RefIds:
+    - rid: 1121620039744880701
+      type: {class: PositionComponent, ns: , asm: Assembly-CSharp}
+      data:
+        X: 0
+        Y: 0
+    - rid: 1121620039744880702
+      type: {class: BuildingHealthComponent, ns: , asm: Assembly-CSharp}
+      data:
+        Current: 0
+        Max: 0
+    - rid: 1121620039744880703
+      type: {class: ProductionComponent, ns: , asm: Assembly-CSharp}
+      data:
+        OutputResource: 0
+        BaseRate: 0
+        Progress: 0
+        CycleTime: 0
