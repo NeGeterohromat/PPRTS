@@ -35,6 +35,6 @@ public class CheckCameraViewObjectsSystem : IProtoInitSystem, IProtoRunSystem
 
     private bool IsObjectVisible(Vector3 cameraPos, Vector3 objPos)
     {
-        return (cameraPos - objPos).magnitude < 4;
+        return (cameraPos - objPos).magnitude < 50;
     }
 }

@@ -6,7 +6,7 @@ public class MovementSystem : IProtoRunSystem
 {
     [DI] private MovementAspect _aspect;
     [DI] private UnityUpdateAspect _updateAspect;
-    private float _speed = 5f; // настройте под вашу игру
+    private float _speed = 0.5f; // настройте под вашу игру
 
     public void Run()
     {

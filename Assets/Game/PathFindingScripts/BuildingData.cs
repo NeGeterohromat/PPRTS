@@ -229,8 +229,15 @@ public class BuildingData
     public PositionData GetDataInPosition(Vector2Int position)
     {
         // Ваша реализация
-        if (positions.ContainsKey(position)) return positions[position];
-
+        if (positions.ContainsKey(position)) 
+        {
+            var p = positions[position];
+            Debug.Log(position);
+            Debug.Log($"{p.isBuilding} {p.isUpBorder} {p.isDownBorder} {p.isLeftBorder} {p.isRightBorder}");
+            return positions[position]; 
+        }
+        Debug.Log("sss");
+        Debug.Log(position);
         return new PositionData() { isBuilding = false };
     }
 }

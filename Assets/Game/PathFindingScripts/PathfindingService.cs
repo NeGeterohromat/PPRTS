@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class PathfindingService
 {
-    private const float CellLength = 1f; // замените на вашу константу
+    private const float CellLength = 3f; // замените на вашу константу
 
     [DI] private BuildingData buildingData;
 
@@ -23,6 +23,8 @@ public class PathfindingService
     {
         int dx = b.X - a.X;
         int dz = b.Z - a.Z;
+        int x1 = Mathf.Min(a.X, b.X);
+        int z1 = Mathf.Min(a.Z, b.Z);
 
         // Соседние вершины (включая диагональные)
         // Ребро проходит между двумя клетками. Нужно проверить, что хотя бы одна из этих клеток свободна.
@@ -45,10 +47,8 @@ public class PathfindingService
         // Если хотя бы одна свободна — проход возможен.
         if (Mathf.Abs(dx) == 1 && Mathf.Abs(dz) == 1)
         {
-            var c1 = buildingData.GetDataInPosition(new Vector2Int(b.X, a.Z));
-            var c2 = buildingData.GetDataInPosition(new Vector2Int(a.X, b.Z));
-            // Проход через угол разрешён, если хотя бы одна из этих клеток свободна
-            return !c1.isBuilding || !c2.isBuilding;
+            var c1 = buildingData.GetDataInPosition(new Vector2Int(x1, z1));
+            return !c1.isBuilding;
         }
 
         // Горизонтальное или вертикальное ребро: ребро лежит на границе двух клеток.
@@ -65,8 +65,7 @@ public class PathfindingService
         // хотя бы с одной стороны.
         // Для горизонтального ребра (dz=0): клетки (x, z-1) и (x, z). Ребро — это граница между ними.
         // Проходимо, если хотя бы одна клетка свободна ИЛИ граница является границей постройки (isUpBorder для нижней клетки или isDownBorder для верхней).
-        int x1 = Mathf.Min(a.X, b.X);
-        int z1 = Mathf.Min(a.Z, b.Z);
+
 
         if (dz == 0) // горизонтальное ребро
         {
