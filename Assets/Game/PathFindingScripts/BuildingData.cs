@@ -231,13 +231,8 @@ public class BuildingData
         // Ваша реализация
         if (positions.ContainsKey(position)) 
         {
-            var p = positions[position];
-            Debug.Log(position);
-            Debug.Log($"{p.isBuilding} {p.isUpBorder} {p.isDownBorder} {p.isLeftBorder} {p.isRightBorder}");
             return positions[position]; 
         }
-        Debug.Log("sss");
-        Debug.Log(position);
-        return new PositionData() { isBuilding = false };
+        return new PositionData() { isBuilding = true };
     }
 }

@@ -90,10 +90,16 @@ public class PathfindingService
         }
     }
 
-    // Эвристика — манхэттенское расстояние (можно и евклидово, но для сетки вершин лучше манхэттен)
+    // Эвристика — манхэттенское расстояние с диагоналями (можно и евклидово, но для сетки вершин лучше манхэттен)
     private float Heuristic(Vertex a, Vertex b)
     {
-        return Mathf.Abs(a.X - b.X) + Mathf.Abs(a.Z - b.Z);
+        int dx = Mathf.Abs(a.X - b.X);
+        int dz = Mathf.Abs(a.Z - b.Z);
+
+        int min = Mathf.Min(dx, dz);
+        int max = Mathf.Max(dx, dz);
+
+        return max + (Mathf.Sqrt(2f) - 1f) * min;
     }
 
     // Поиск ближайшей свободной точки, если цель внутри постройки
@@ -153,15 +159,33 @@ public class PathfindingService
             if (current.Equals(endV))
             {
                 // Восстанавливаем путь
-                var path = new List<Vector2>();
-                var node = current;
+                var path = new List<Vector2>() { end };
+                var lastNode = current;
+
+                Vertex node;
+                if (cameFrom.ContainsKey(lastNode))
+                {
+                    node = cameFrom[lastNode];
+                    while (IsNodeInOneCellWithVector(end, node))
+                    {
+                        lastNode = node;
+                        node = cameFrom[node];
+                    }
+                }
+                node = lastNode;
                 while (cameFrom.ContainsKey(node))
                 {
                     path.Add(new Vector2(node.X * CellLength, node.Z * CellLength));
+                    lastNode = node;
                     node = cameFrom[node];
+                    if (IsNodeInOneCellWithVector(start, lastNode)) break;
                 }
-                path.Add(new Vector2(startV.X * CellLength, startV.Z * CellLength));
+                var b = IsNodeInOneCellWithVector(start, lastNode);
+                Debug.Log($"{b} {start} {lastNode.X} {lastNode.Z}");
+                if (!b)
+                    path.Add(new Vector2(startV.X * CellLength, startV.Z * CellLength));
                 path.Reverse();
+                Debug.Log(string.Join(' ',path));
                 return path;
             }
 
@@ -190,5 +214,14 @@ public class PathfindingService
         }
 
         return null; // путь не найден
+    }
+
+    private bool IsNodeInOneCellWithVector(Vector2 vec, Vertex node)
+    {
+        var v1 = new Vertex(Mathf.CeilToInt(vec.x / CellLength), Mathf.CeilToInt(vec.y / CellLength));
+        var v2 = new Vertex(Mathf.FloorToInt(vec.x / CellLength), Mathf.CeilToInt(vec.y / CellLength));
+        var v3 = new Vertex(Mathf.CeilToInt(vec.x / CellLength), Mathf.FloorToInt(vec.y / CellLength));
+        var v4 = new Vertex(Mathf.FloorToInt(vec.x / CellLength), Mathf.FloorToInt(vec.y / CellLength));
+        return node.Equals(v1) || node.Equals(v2) || node.Equals(v3) || node.Equals(v4);
     }
 }
