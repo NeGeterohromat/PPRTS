@@ -106,18 +106,9 @@ public class MouseSelector : MonoBehaviour
 
     private void OnMoveEntities(InputAction.CallbackContext context)
     {
-        highlights.Keys.First().TryUnpack(out var world, out _);
-        var aspect = world.Aspect<MovementAspect>();
-        var twoDPos = new Vector2(lastClickedPoint.x, lastClickedPoint.z);
         foreach (var e in highlights.Keys)
         {
-            e.TryUnpack(out _, out var entity);
-            if (!aspect.NeedCalculatePathPool.Has(entity))
-                aspect.NeedCalculatePathPool.Add(entity);
-            if (!aspect.MovementGoalPool.Has(entity))
-                aspect.MovementGoalPool.Add(entity);
-            ref var moveComp = ref aspect.MovementGoalPool.Get(entity);
-            moveComp.GoalPosition = twoDPos;
+            adder.Add(new MoveEntityCommand(e, lastClickedPoint));
         }
     }
 }
