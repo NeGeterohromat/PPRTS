@@ -5,6 +5,8 @@ using UnityEngine;
 
 public sealed class EcsStartup : MonoBehaviour
 {
+    public static CommandQueue InstanceQueue { get; private set; }
+
     private IProtoSystems _systems;
     private InputSystem_Actions actions;
     [SerializeField] private MouseSelector mouseSelector;
@@ -14,6 +16,7 @@ public sealed class EcsStartup : MonoBehaviour
         ProtoWorld world = new ProtoWorld(new BaseAspect());
 
         CommandQueue fullQueue = new CommandQueue();
+        InstanceQueue = fullQueue; 
         ICommandAdder adder = fullQueue;
         ICommandPopper popper = fullQueue;
         actions = new();
@@ -24,18 +27,19 @@ public sealed class EcsStartup : MonoBehaviour
             .AddService(adder,typeof(ICommandAdder))
             .AddService(popper,typeof(ICommandPopper))
             .AddService(actions, typeof(InputSystem_Actions))            
-            .AddService(mouseSelector)
+            //.AddService(mouseSelector)
             .AddModule(new UnityModule())
             .AddModule(new CameraMovementModule())
             .AddModule(new CubeRotationModule())
             .AddModule(new UnityUpdateModule())
 
             .AddSystem(new ProductionSystem())
-            .AddSystem(new ConsumptionSystem());
+            .AddSystem(new ConsumptionSystem())
+            .AddSystem(mouseSelector);
 
         CreatePlayer();
         _systems.Init();
-        mouseSelector.Init(_systems);
+        //mouseSelector.Init(_systems);
     }
 
     private void CreatePlayer()
