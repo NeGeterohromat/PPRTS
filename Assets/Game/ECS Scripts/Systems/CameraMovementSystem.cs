@@ -30,8 +30,8 @@ public class CameraMovementSystem : IProtoInitSystem, IProtoRunSystem
             ref var transform = ref aspect.TransformDataPool.Get(entity);
             transform.Position += worldDir;
 
-            if (!aspect.NeedTransformUpdateByCameraEventPool.Has(entity))
-                aspect.NeedTransformUpdateByCameraEventPool.Add(entity);
+            if (!aspect.VisibleByCameraTagPool.Has(entity))
+                aspect.VisibleByCameraTagPool.Add(entity);
             if (!aspect.NeedTransformUpdateEventPool.Has(entity))
                 aspect.NeedTransformUpdateEventPool.Add(entity);
         }

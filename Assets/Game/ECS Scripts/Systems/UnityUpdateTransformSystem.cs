@@ -21,7 +21,6 @@ public class UnityUpdateTransformSystem : IProtoInitSystem, IProtoRunSystem
             goComponent.Obj.transform.position = transformData.Position;
             goComponent.Obj.transform.rotation = transformData.Rotation;
 
-            _aspect.NeedTransformUpdateByCameraEventPool.Del(entity);
             _aspect.NeedTransformUpdateEventPool.Del(entity);
         }
     }

@@ -21,6 +21,7 @@ public class MovementSystem : IProtoRunSystem
             if (goal.CurrentPathIndex >= goal.PathPoints.Count)
             {
                 // Дошли до конца
+                _aspect.MovementGoalPool.Del(entity);
                 continue;
             }
 

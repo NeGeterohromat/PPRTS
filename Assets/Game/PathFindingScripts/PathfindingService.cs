@@ -6,6 +6,7 @@ using UnityEngine;
 public class PathfindingService
 {
     private const float CellLength = 3f; // замените на вашу константу
+    private const float RandomDiffRadius = 0.4f;
 
     [DI] private BuildingData buildingData;
 
@@ -105,6 +106,9 @@ public class PathfindingService
     // Поиск ближайшей свободной точки, если цель внутри постройки
     public Vector2 ResolveGoal(Vector2 goal)
     {
+        // небольшой разброс, чтобы все юниты не отправлялись в одну точку
+        goal = goal + UnityEngine.Random.insideUnitCircle * RandomDiffRadius;
+
         var cell = new Vector2Int(Mathf.FloorToInt(goal.x / CellLength), Mathf.FloorToInt(goal.y / CellLength));
         var data = buildingData.GetDataInPosition(cell);
         if (!data.isBuilding) return goal;
@@ -167,8 +171,9 @@ public class PathfindingService
                 {
                     node = cameFrom[lastNode];
                     while (IsNodeInOneCellWithVector(end, node))
-                    {
+                    {                        
                         lastNode = node;
+                        if (!cameFrom.ContainsKey(node)) { path.Add(new Vector2(node.X * CellLength, node.Z * CellLength)); break; }
                         node = cameFrom[node];
                     }
                 }

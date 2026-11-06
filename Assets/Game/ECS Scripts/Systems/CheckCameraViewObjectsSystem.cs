@@ -26,8 +26,12 @@ public class CheckCameraViewObjectsSystem : IProtoInitSystem, IProtoRunSystem
                 ref var transformComponent = ref unityAspect.TransformDataPool.Get(entity);
                 if (IsObjectVisible(cameraTransform.Position,transformComponent.Position))
                 {
-                    if (!unityAspect.NeedTransformUpdateByCameraEventPool.Has(entity))
-                        unityAspect.NeedTransformUpdateByCameraEventPool.Add(entity);
+                    if (!unityAspect.VisibleByCameraTagPool.Has(entity))
+                        unityAspect.VisibleByCameraTagPool.Add(entity);
+                }
+                else
+                {
+                    unityAspect.VisibleByCameraTagPool.DelIfExists(entity);
                 }
             }
         }
