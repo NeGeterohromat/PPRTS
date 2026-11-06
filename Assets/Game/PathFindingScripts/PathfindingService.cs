@@ -6,7 +6,7 @@ using UnityEngine;
 public class PathfindingService
 {
     private const float CellLength = 3f; // замените на вашу константу
-    private const float RandomDiffRadius = 0.4f;
+    private const float RandomDiffRadius = 0.1f; // постройка отступает от края клетки на 0.1
 
     [DI] private BuildingData buildingData;
 
@@ -103,35 +103,201 @@ public class PathfindingService
         return max + (Mathf.Sqrt(2f) - 1f) * min;
     }
 
+    private IEnumerable<Func<int, IEnumerable<Vector2Int>>> FuncOrdder(Func<int, IEnumerable<Vector2Int>> f1, 
+        Func<int, IEnumerable<Vector2Int>> f2, 
+        Func<int, IEnumerable<Vector2Int>> f3, 
+        Func<int, IEnumerable<Vector2Int>> f4,
+        Func<int, IEnumerable<Vector2Int>> edge1,
+        Func<int, IEnumerable<Vector2Int>> edge2,
+        Func<int, IEnumerable<Vector2Int>> edge3,
+        Func<int, IEnumerable<Vector2Int>> edge4,
+        int loopCount)
+    {
+        for (int i = 0; i < loopCount; i++)
+        {
+            yield return f1;
+            yield return edge1;
+            yield return f2;
+            yield return edge2;
+            yield return f3;
+            yield return edge3;
+            yield return f4;
+            yield return edge4;
+        }
+    }
+
+    private IEnumerable<int> GetLoopOrder(int count)
+    {
+        yield return 0;
+        for (int i = 0; i < count - 1; i++)
+        {
+            yield return (i / 2 + 1) * ((i % 2) * 2 - 1);
+        }
+    }
+
+    private IEnumerable<Vector2Int> LoopLeftDirections(int radius)
+    {
+        foreach (var n in GetLoopOrder(radius*2-1))
+        {
+            yield return new Vector2Int(-radius, n);
+        }
+    }
+
+    private IEnumerable<Vector2Int> LoopRightDirections(int radius)
+    {
+        foreach (var n in GetLoopOrder(radius * 2 - 1))
+        {
+            yield return new Vector2Int(radius, n);
+        }
+    }
+
+    private IEnumerable<Vector2Int> LoopDownDirections(int radius)
+    {
+        foreach (var n in GetLoopOrder(radius * 2 - 1))
+        {
+            yield return new Vector2Int(n, -radius);
+        }
+    }
+
+    private IEnumerable<Vector2Int> LoopUpDirections(int radius)
+    {
+        foreach (var n in GetLoopOrder(radius * 2 - 1))
+        {
+            yield return new Vector2Int(n, radius);
+        }
+    }
+
+    private IEnumerable<Vector2Int> GetUpRightEdge(int radius)
+    {
+        yield return new Vector2Int(radius, radius);
+    }
+
+    private IEnumerable<Vector2Int> GetUpLeftEdge(int radius)
+    {
+        yield return new Vector2Int(-radius, radius);
+    }
+
+    private IEnumerable<Vector2Int> GetDownRightEdge(int radius)
+    {
+        yield return new Vector2Int(radius, -radius);
+    }
+
+    private IEnumerable<Vector2Int> GetDownLeftEdge(int radius)
+    {
+        yield return new Vector2Int(-radius, -radius);
+    }
+
+    private IEnumerable<Vector2Int> LoopDirections(Vector2 cell, int radiusCount)
+    {
+        var order = FuncOrdder(LoopUpDirections, LoopRightDirections, LoopDownDirections, LoopLeftDirections, 
+            GetUpRightEdge, GetDownRightEdge, GetDownLeftEdge, GetUpLeftEdge,
+            radiusCount);
+        if (cell.x - Mathf.Floor(cell.x) < 0.5f && Mathf.Ceil(cell.y) - cell.y < 0.5f)
+            order = FuncOrdder(LoopUpDirections, LoopLeftDirections, LoopDownDirections, LoopRightDirections,
+                GetUpLeftEdge, GetDownLeftEdge, GetDownRightEdge, GetUpRightEdge,
+                radiusCount);
+        if (cell.x - Mathf.Floor(cell.x) < 0.5f && cell.y - Mathf.Floor(cell.y) < 0.5f)
+            order = FuncOrdder(LoopDownDirections, LoopLeftDirections, LoopUpDirections, LoopRightDirections,
+                GetDownLeftEdge, GetUpLeftEdge, GetUpRightEdge, GetDownRightEdge,
+                radiusCount);
+        if (cell.y - Mathf.Floor(cell.y) < 0.5f && cell.x - Mathf.Ceil(cell.x) < 0.5f)
+            order = FuncOrdder(LoopDownDirections, LoopRightDirections, LoopUpDirections, LoopLeftDirections,
+                GetDownRightEdge, GetUpRightEdge, GetUpLeftEdge, GetDownLeftEdge,
+                radiusCount);
+
+        int radius = 1;
+        int counter = 0;
+        foreach (var directionLooper in order)
+        {
+            foreach(var direction in directionLooper(radius))
+            {
+                yield return direction;
+            }
+
+            counter = (counter + 1) % 8;
+            if (counter == 0)
+                radius++;
+        }
+    }
+
     // Поиск ближайшей свободной точки, если цель внутри постройки
     public Vector2 ResolveGoal(Vector2 goal)
     {
         // небольшой разброс, чтобы все юниты не отправлялись в одну точку
-        goal = goal + UnityEngine.Random.insideUnitCircle * RandomDiffRadius;
+        var randomShift = UnityEngine.Random.insideUnitCircle * RandomDiffRadius;        
 
+        var cellWithoutRound = new Vector2(goal.x / CellLength, goal.y / CellLength);
         var cell = new Vector2Int(Mathf.FloorToInt(goal.x / CellLength), Mathf.FloorToInt(goal.y / CellLength));
         var data = buildingData.GetDataInPosition(cell);
-        if (!data.isBuilding) return goal;
+        if (!data.isBuilding) return goal + randomShift;
 
-        // Ищем ближайшую свободную клетку по спирали
-        for (int radius = 1; radius < 100; radius++)
+        var res = goal;
+
+        // Ищем ближайшую свободную клетку
+        foreach (var dir in LoopDirections(cellWithoutRound, 5))
         {
-            for (int dx = -radius; dx <= radius; dx++)
+            var neighbor = cell + dir;
+            Debug.Log($"dir {dir} {neighbor}");
+            var nd = buildingData.GetDataInPosition(neighbor);
+
+            if (Mathf.Abs(dir.x) == Mathf.Abs(dir.y))
             {
-                for (int dz = -radius; dz <= radius; dz++)
+                if (!nd.isBuilding)
                 {
-                    if (Mathf.Abs(dx) != radius && Mathf.Abs(dz) != radius) continue;
-                    var neighbor = new Vector2Int(cell.x + dx, cell.y + dz);
-                    var nd = buildingData.GetDataInPosition(neighbor);
-                    if (!nd.isBuilding)
+                    // Возвращаем левый нижний угол клетки neighbour, если neighbour это правый верхний сосед
+                    int dx = 1;
+                    int dy = 1;
+                    if (dir.x > 0 && dir.y < 0)
+                        dx = 0;
+                    if (dir.x < 0 && dir.y > 0)
+                        dy = 0;
+                    if (dir.x < 0 && dir.y < 0)
                     {
-                        // Возвращаем центр этой клетки или ближайшую точку на её границе
-                        return new Vector2((neighbor.x + 0.5f) * CellLength, (neighbor.y + 0.5f) * CellLength);
+                        dx = 0;
+                        dy = 0;
                     }
+                    res = (neighbor + new Vector2(dx,dy)) * CellLength;
+                    Debug.Log($"res {res} , {dir * (new Vector2(-1f / Mathf.Abs(dir.x), -1f / Mathf.Abs(dir.y)))} , {neighbor + (dir * (new Vector2(-1f / dir.x, -1f / dir.y)))}");
+                    break;
+                }
+            }
+            else
+            {
+                if (dir.y < 0 && (!nd.isBuilding || nd.isUpBorder)) 
+                {
+                    var x = goal.x;
+                    if (dir.x < 0) x = (neighbor.x + 1) * CellLength;
+                    if (dir.x > 0) x = neighbor.x * CellLength;
+                    res = new Vector2(x, (neighbor.y + 1) * CellLength);
+                    break;
+                }
+                if (dir.y > 0 && (!nd.isBuilding || nd.isDownBorder))
+                {
+                    var x = goal.x;
+                    if (dir.x < 0) x = (neighbor.x + 1) * CellLength;
+                    if (dir.x > 0) x = neighbor.x * CellLength;
+                    res = new Vector2(x, neighbor.y * CellLength);
+                    break;
+                }
+                if (dir.x < 0 && (!nd.isBuilding || nd.isRightBorder))
+                {
+                    var y = goal.y;
+                    if (dir.y < 0) y = (neighbor.y + 1) * CellLength;
+                    if (dir.y > 0) y = neighbor.y * CellLength;
+                    res = new Vector2((neighbor.x + 1) * CellLength, y);
+                    break;
+                }
+                if (dir.x > 0 && (!nd.isBuilding || nd.isLeftBorder))
+                {
+                    var y = goal.y;
+                    if (dir.y < 0) y = (neighbor.y + 1) * CellLength;
+                    if (dir.y > 0) y = neighbor.y * CellLength;
+                    res = new Vector2(neighbor.x * CellLength, y);
+                    break;
                 }
             }
         }
-        return goal; // fallback
+        return res + randomShift; // fallback
     }
 
     // Основной поиск пути между двумя мировыми точками
@@ -223,6 +389,10 @@ public class PathfindingService
 
     private bool IsNodeInOneCellWithVector(Vector2 vec, Vertex node)
     {
+        var cell = new Vector2Int(Mathf.FloorToInt(vec.x / CellLength), Mathf.FloorToInt(vec.y / CellLength));
+        // Если вектор попал внутрь здания, мы не будем пропусать ни один ход.
+        if (buildingData.GetDataInPosition(cell).isBuilding) return false;
+
         var v1 = new Vertex(Mathf.CeilToInt(vec.x / CellLength), Mathf.CeilToInt(vec.y / CellLength));
         var v2 = new Vertex(Mathf.FloorToInt(vec.x / CellLength), Mathf.CeilToInt(vec.y / CellLength));
         var v3 = new Vertex(Mathf.CeilToInt(vec.x / CellLength), Mathf.FloorToInt(vec.y / CellLength));

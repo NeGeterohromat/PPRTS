@@ -110,7 +110,7 @@ public class BuildingData
     {new Vector2Int(2, 2), new PositionData()
     {
         isBuilding = true,
-        isUpBorder = true,
+        isUpBorder = false, // aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
         isDownBorder = true,
         isLeftBorder = false,
         isRightBorder = true
@@ -153,7 +153,7 @@ public class BuildingData
     {
         isBuilding = true,
         isUpBorder = true,
-        isDownBorder = true,
+        isDownBorder = false, // aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
         isLeftBorder = true,
         isRightBorder = false
     }},
