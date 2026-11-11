@@ -850,7 +850,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7760209326904099947, guid: 567dc45ce9a7bba479fcbd6b64746413, type: 3}
       propertyPath: Components.Array.size
-      value: 3
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 7760209326904099947, guid: 567dc45ce9a7bba479fcbd6b64746413, type: 3}
+      propertyPath: 'Components.Array.data[3]'
+      value: 7766259907317203007
+      objectReference: {fileID: 0}
+    - target: {fileID: 7760209326904099947, guid: 567dc45ce9a7bba479fcbd6b64746413, type: 3}
+      propertyPath: 'managedReferences[7766259907317203007]'
+      value: Assembly-CSharp OwnerComponent
+      objectReference: {fileID: 0}
+    - target: {fileID: 7760209326904099947, guid: 567dc45ce9a7bba479fcbd6b64746413, type: 3}
+      propertyPath: managedReferences[7766259907317203007].OwnerID
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7760209326904099947, guid: 567dc45ce9a7bba479fcbd6b64746413, type: 3}
       propertyPath: managedReferences[1121619792804970560].Position.x
@@ -1374,7 +1386,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7760209326904099947, guid: 567dc45ce9a7bba479fcbd6b64746413, type: 3}
       propertyPath: Components.Array.size
-      value: 3
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 7760209326904099947, guid: 567dc45ce9a7bba479fcbd6b64746413, type: 3}
+      propertyPath: 'Components.Array.data[3]'
+      value: 7766259907317203006
+      objectReference: {fileID: 0}
+    - target: {fileID: 7760209326904099947, guid: 567dc45ce9a7bba479fcbd6b64746413, type: 3}
+      propertyPath: 'managedReferences[7766259907317203006]'
+      value: Assembly-CSharp OwnerComponent
+      objectReference: {fileID: 0}
+    - target: {fileID: 7760209326904099947, guid: 567dc45ce9a7bba479fcbd6b64746413, type: 3}
+      propertyPath: managedReferences[7766259907317203006].OwnerID
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7760209326904099947, guid: 567dc45ce9a7bba479fcbd6b64746413, type: 3}
       propertyPath: managedReferences[1121619792804970560].Position.x

@@ -21,9 +21,11 @@ public sealed class EcsStartup : MonoBehaviour
 
         _systems = new ProtoSystems(world)
             .AddModule(new AutoInjectModule(true))
-            .AddService(adder,typeof(ICommandAdder))
-            .AddService(popper,typeof(ICommandPopper))
-            .AddService(actions, typeof(InputSystem_Actions))            
+            .AddService(adder, typeof(ICommandAdder))
+            .AddService(popper, typeof(ICommandPopper))
+            .AddService(actions, typeof(InputSystem_Actions))
+            .AddService(new EntityPrefabDatabase())
+            .InitHere<EntityPrefabDatabase>()
             .AddService(mouseSelector)
             .AddService(new BuildingData())
             .AddService(new PathfindingService())
@@ -34,23 +36,28 @@ public sealed class EcsStartup : MonoBehaviour
             .AddModule(new CubeRotationModule())
             .AddModule(new UnityUpdateModule())
 
-            .AddSystem(new ProductionSystem())
-            .AddSystem(new ConsumptionSystem());
 
-        CreatePlayer();
+            .AddSystem(new ProductionSystem())
+            .AddSystem(new ConsumptionSystem())
+
+            .AddSystem(new OppositionAISystem());
+
+        CreatePlayer(1);
+        CreatePlayer(2);
         _systems.Init();
         mouseSelector.Init(_systems);
     }
 
-    private void CreatePlayer()
+    private void CreatePlayer(int id)
     {
         var aspect = _systems.World().Aspect<GameAspect>();
         ref var tag = ref aspect.Players.NewEntity(out var player);
         ref var inv = ref aspect.Inventories.Add(player);
+        tag.ID = id;
         inv.Wood = 0;
         inv.Coal = 0;
         inv.Food = 0;
-        Debug.Log("Игрок создан");
+        Debug.Log($"Игрок {id} создан");
     }
 
     private void Update() => _systems?.Run();

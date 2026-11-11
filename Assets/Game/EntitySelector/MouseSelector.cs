@@ -20,7 +20,8 @@ public class MouseSelector : MonoBehaviour
 
     [DI] private UnityUpdateAspect updateAspect;
     [DI] private InputSystem_Actions actions;
-    [DI] ICommandAdder adder;
+    [DI] private ICommandAdder adder;
+    [DI] private EntityPrefabDatabase entities;
 
     private bool _isMultySelecting;
     private Vector2 _startPosition;
@@ -39,6 +40,7 @@ public class MouseSelector : MonoBehaviour
     {
         actions.Player.ToggleRotate.performed += OnToggleRotate;
         actions.Player.MoveEntities.performed += OnMoveEntities;
+        actions.Player.CreateCircleEntity.performed += OnCreateCircleEntity;
     }
 
     void Update()
@@ -235,7 +237,12 @@ public class MouseSelector : MonoBehaviour
     {
         foreach (var e in highlights)
         {
-            adder.Add(new MoveEntityCommand(e, lastClickedPoint));
+            adder.Add(new MoveEntityCommand(e, lastClickedPoint, 1));
         }
+    }
+
+    private void OnCreateCircleEntity(InputAction.CallbackContext context)
+    {
+        adder.Add(new CreateEntityCommand(entities.Get(EntityType.RotatingCircle), lastClickedPoint, 1));
     }
 }
