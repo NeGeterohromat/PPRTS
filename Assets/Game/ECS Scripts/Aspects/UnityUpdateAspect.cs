@@ -27,6 +27,7 @@ public class UnityUpdateAspect : ProtoAspectInject
     public ProtoIt VisibleEntityIterator = new (new[]
         {
             typeof(VisibleByCameraTagComponent),
+            typeof(OwnerComponent),
             typeof(TransformDataComponent)
         });
     public ProtoIt HighlightedTagIterator = new(new[]
@@ -73,4 +74,3 @@ public struct HighlightedTagComponent
 }
 
 public struct UnhighlightEventComponent { }
-

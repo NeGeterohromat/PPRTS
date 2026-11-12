@@ -13,6 +13,8 @@ public sealed class EcsStartup : MonoBehaviour
     {
         ProtoWorld world = new ProtoWorld(new BaseAspect());
 
+        var playerID = new ThisPlayerID() { ID = 1 };
+
         CommandQueue fullQueue = new CommandQueue();
         ICommandAdder adder = fullQueue;
         ICommandPopper popper = fullQueue;
@@ -21,6 +23,7 @@ public sealed class EcsStartup : MonoBehaviour
 
         _systems = new ProtoSystems(world)
             .AddModule(new AutoInjectModule(true))
+            .AddService(playerID)
             .AddService(adder, typeof(ICommandAdder))
             .AddService(popper, typeof(ICommandPopper))
             .AddService(actions, typeof(InputSystem_Actions))
@@ -67,4 +70,9 @@ public sealed class EcsStartup : MonoBehaviour
         _systems?.Destroy();
         _systems = null;
     }
+}
+
+public struct ThisPlayerID
+{
+    public int ID;
 }

@@ -5,6 +5,8 @@ using UnityEngine;
 
 public class OppositionAISystem : IProtoRunSystem, IProtoInitSystem
 {
+    private readonly int aiID = 2;
+
     [DI] private ICommandAdder adder;
     [DI] private EntityPrefabDatabase prefabDatabase;
     [DI] private GameAspect aspect;
@@ -31,7 +33,7 @@ public class OppositionAISystem : IProtoRunSystem, IProtoInitSystem
         if (!isSpawned && Time.realtimeSinceStartup >= spawnTimeInSeconds) 
         {
             isSpawned = true;
-            adder.Add(new CreateEntityCommand(prefabDatabase.Get(EntityType.RotatingCircle), new Vector3(5,-0.5f,5),2));
+            adder.Add(new CreateEntityCommand(prefabDatabase.Get(EntityType.RotatingCircle), new Vector3(5, 0, 5), aiID));
         }
 
         if (!isEntity && isSpawned) 
@@ -39,7 +41,7 @@ public class OppositionAISystem : IProtoRunSystem, IProtoInitSystem
             foreach (var en in OwnerComponentIterator) 
             {
                 ref var ownerComponent = ref aspect.OwnerComponents.Get(en);
-                if (ownerComponent.OwnerID == 2)
+                if (ownerComponent.OwnerID == aiID)
                 {
                     isEntity = true;
                     aiEntity = world.PackEntityWithWorld(en);
@@ -50,7 +52,7 @@ public class OppositionAISystem : IProtoRunSystem, IProtoInitSystem
         if (!isGoing && isSpawned && isEntity && Time.realtimeSinceStartup >= goTimeInSeconds) 
         {
             isGoing = true;
-            adder.Add(new MoveEntityCommand(aiEntity, new Vector3(9.3f, -0.5f, 3.2f), 2));
+            adder.Add(new MoveEntityCommand(aiEntity, new Vector3(9.3f, 0, 3.2f), aiID));
         }
     }
 }

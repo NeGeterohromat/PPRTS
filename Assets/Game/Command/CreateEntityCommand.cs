@@ -1,5 +1,9 @@
+using Leopotam.EcsProto;
 using Leopotam.EcsProto.QoL;
 using Leopotam.EcsProto.Unity;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class CreateEntityCommand : ICommand
@@ -17,20 +21,17 @@ public class CreateEntityCommand : ICommand
     public void Execute()
     {
         var obj = GameObject.Instantiate(Prefab, position, Quaternion.identity);
-        var entity = obj.GetComponent<ProtoUnityAuthoring>().Entity();
 
-        entity.TryUnpack(out var world, out var en);
-        var playerAspect = world.Aspect<GameAspect>();
-        var updateAspect = world.Aspect<UnityUpdateAspect>();
-        if (playerAspect.OwnerComponents.Has(en))
-        {
-            ref var ownerComponent = ref playerAspect.OwnerComponents.Get(en);
-            ownerComponent.OwnerID = senderId;
-        }
-        if (updateAspect.TransformDataPool.Has(en))
-        {
-            ref var transform = ref updateAspect.TransformDataPool.Get(en);
-            transform.Position = position;
-        }
+        var comps = obj.GetComponent<ProtoUnityAuthoring>().Components;
+        var ownerComp = comps.Where(c=>c.GetType()==typeof(OwnerComponent)).First();
+        var transformComp = comps.Where(c => c.GetType() == typeof(TransformDataComponent)).First();
+        comps.Remove(ownerComp);
+        comps.Remove(transformComp);
+
+        var owner = new OwnerComponent() { OwnerID = senderId };
+        var transform = new TransformDataComponent() { Position = position, Rotation = Quaternion.identity };
+
+        comps.Add(owner);
+        comps.Add(transform);
     }
 }
