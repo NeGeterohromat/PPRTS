@@ -4,9 +4,8 @@ public class PlaceBuildingCommand : ICommand
 {
     private readonly Vector2Int _gridPosition;
     private readonly GameObject _buildingPrefab;
-    private readonly float _yPosition; // <-- НОВОЕ ПОЛЕ
+    private readonly float _yPosition;
 
-    // Добавляем аргумент yPosition в конструктор
     public PlaceBuildingCommand(Vector2Int gridPosition, GameObject buildingPrefab, float yPosition)
     {
         _gridPosition = gridPosition;
@@ -18,12 +17,22 @@ public class PlaceBuildingCommand : ICommand
     {
         float cellSize = 1.0f;
 
-        // Теперь используем реальную высоту, а не 0f
-        Vector3 worldPosition = new Vector3(_gridPosition.x * cellSize, _yPosition, _gridPosition.y * cellSize);
+        // Берем размер здания из скрипта, как и в MouseSelector
+        BuildingGridData gridData = _buildingPrefab.GetComponent<BuildingGridData>();
+        int sizeX = gridData != null ? gridData.GridSize.x : 1;
+        int sizeZ = gridData != null ? gridData.GridSize.y : 1;
 
-        GameObject newBuilding = Object.Instantiate(_buildingPrefab, worldPosition, Quaternion.identity);
-        newBuilding.name = $"Building_{_gridPosition.x}_{_gridPosition.y}";
+        // Центрируем здание (ТОЧНО ТАК ЖЕ, КАК ПРИЗРАК)
+        float offsetX = (sizeX * cellSize) / 2f;
+        float offsetZ = (sizeZ * cellSize) / 2f;
 
-        Debug.Log($"Построено здание на клетке {_gridPosition}. Высота: {_yPosition}");
+        Vector3 worldPosition = new Vector3(
+            _gridPosition.x * cellSize + offsetX,
+            _yPosition,
+            _gridPosition.y * cellSize + offsetZ
+        );
+
+        Object.Instantiate(_buildingPrefab, worldPosition, Quaternion.identity);
+        Debug.Log($"Построено здание на {_gridPosition}");
     }
 }

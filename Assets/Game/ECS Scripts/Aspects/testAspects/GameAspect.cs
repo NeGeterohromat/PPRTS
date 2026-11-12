@@ -53,6 +53,8 @@ public struct PlayerInventoryComponent
     public float Wood;
     public float Coal;
     public float Food;
+    public float Oil; 
+    public float Gas;
 }
 
 public enum ResourceType
@@ -61,5 +63,7 @@ public enum ResourceType
     Wood,
     Coal,
     Steel,
-    Food
+    Food,
+    Oil, 
+    Gas
 }

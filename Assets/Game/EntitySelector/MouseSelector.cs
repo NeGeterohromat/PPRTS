@@ -4,20 +4,22 @@ using Leopotam.EcsProto.Unity;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.EventSystems;
 
 public class MouseSelector : MonoBehaviour, IProtoInitSystem
 {
     private Camera mainCamera;
-    private Dictionary<ProtoPackedEntityWithWorld, HighlightableObject> highlights = new();
     [DI] private InputSystem_Actions actions;
     [DI] ICommandAdder adder;
 
-    [Header("Настройки строительства")]
-    public GameObject BuildingPrefab;
+    private Dictionary<ProtoPackedEntityWithWorld, HighlightableObject> highlights = new();
+
+    private GameObject _prefabToBuild = null;
+    private GameObject _ghostObject = null; 
+
+    [Header("Настройки сетки")]
     public float GridSize = 1.0f;
     public LayerMask GroundLayer;
-
-    private bool _isBuildMode = false;
 
     void Start()
     {
@@ -26,65 +28,145 @@ public class MouseSelector : MonoBehaviour, IProtoInitSystem
 
     public void Init(IProtoSystems systems)
     {
-        if (actions != null)
-            actions.Player.ToggleRotate.performed += OnToggleRotate;
+        if (actions != null) actions.Player.ToggleRotate.performed += OnToggleRotate;
+    }
+
+    public void StartPlacementMode(GameObject prefab)
+    {
+        _prefabToBuild = prefab;
+
+        if (_ghostObject != null) Destroy(_ghostObject); 
+
+        _ghostObject = Instantiate(_prefabToBuild);
+
+        foreach (var col in _ghostObject.GetComponentsInChildren<Collider>()) Destroy(col);
+
+        var authoring = _ghostObject.GetComponent<ResourceGeneratorAuthoring>();
+        if (authoring != null) Destroy(authoring);
+
+        SetGhostColor(_ghostObject, new Color(1f, 1f, 1f, 0.5f));
     }
 
     void Update()
     {
         if (Mouse.current == null) return;
 
-        // Включение/выключение режима стройки (ПКМ)
-        if (Mouse.current.rightButton.wasPressedThisFrame)
-        {
-            _isBuildMode = !_isBuildMode;
-            DeselectCurrent();
-            Debug.Log($"Режим строительства: {(_isBuildMode ? "ВКЛ" : "ВЫКЛ")}");
+        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
             return;
-        }
 
-        if (Mouse.current.leftButton.wasPressedThisFrame)
+        Vector2 mousePosition = Mouse.current.position.ReadValue();
+        Ray ray = mainCamera.ScreenPointToRay(mousePosition);
+
+        if (_prefabToBuild != null && _ghostObject != null)
         {
-            Vector2 mousePosition = Mouse.current.position.ReadValue();
-            Ray ray = mainCamera.ScreenPointToRay(mousePosition);
+            UpdateGhostPosition(ray);
 
-            if (_isBuildMode)
+            if (Mouse.current.leftButton.wasPressedThisFrame)
             {
                 TryPlaceBuilding(ray);
             }
-            else
+            else if (Mouse.current.rightButton.wasPressedThisFrame)
             {
-                TrySelectObject(ray);
+                CancelBuilding();
             }
+        }
+        else if (Mouse.current.leftButton.wasPressedThisFrame)
+        {
+            TrySelectObject(ray);
+        }
+    }
+
+    private void UpdateGhostPosition(Ray ray)
+    {
+        if (Physics.Raycast(ray, out RaycastHit hit, 1000f, GroundLayer))
+        {
+            if (Vector3.Dot(hit.normal, Vector3.up) < 0.9f)
+            {
+                _ghostObject.SetActive(false);
+                return;
+            }
+            _ghostObject.SetActive(true);
+
+            int x = Mathf.FloorToInt(hit.point.x / GridSize);
+            int z = Mathf.FloorToInt(hit.point.z / GridSize);
+            Vector2Int gridPos = new Vector2Int(x, z);
+
+            BuildingGridData gridData = _prefabToBuild.GetComponent<BuildingGridData>();
+            int sizeX = gridData != null ? gridData.GridSize.x : 1;
+            int sizeZ = gridData != null ? gridData.GridSize.y : 1;
+
+            float offsetX = (sizeX * GridSize) / 2f;
+            float offsetZ = (sizeZ * GridSize) / 2f;
+            Vector3 ghostPos = new Vector3(x * GridSize + offsetX, hit.point.y, z * GridSize + offsetZ);
+
+            _ghostObject.transform.position = ghostPos;
+
+            if (BuildingGridManager.Instance.IsAreaFree(gridPos, sizeX, sizeZ))
+                SetGhostColor(_ghostObject, new Color(0f, 1f, 0f, 0.5f));
+            else
+                SetGhostColor(_ghostObject, new Color(1f, 0f, 0f, 0.5f));
+        }
+        else
+        {
+            _ghostObject.SetActive(false); 
         }
     }
 
     private void TryPlaceBuilding(Ray ray)
     {
-        if (BuildingPrefab == null) { /* ... */ return; }
-
-        // Резервный путь, если DI не сработал
-        if (adder == null && EcsStartup.InstanceQueue != null)
-        {
-            adder = EcsStartup.InstanceQueue;
-        }
-
-        if (adder == null)
-        {
-            Debug.LogError("adder равен null и InstanceQueue тоже null!");
-            return;
-        }
+        if (adder == null && EcsStartup.InstanceQueue != null) adder = EcsStartup.InstanceQueue;
+        if (adder == null) return;
 
         if (Physics.Raycast(ray, out RaycastHit hit, 1000f, GroundLayer))
         {
-            int x = Mathf.RoundToInt(hit.point.x / GridSize);
-            int z = Mathf.RoundToInt(hit.point.z / GridSize);
+            if (Vector3.Dot(hit.normal, Vector3.up) < 0.9f)
+            {
+                return;
+            }
+
+            int x = Mathf.FloorToInt(hit.point.x / GridSize);
+            int z = Mathf.FloorToInt(hit.point.z / GridSize);
             Vector2Int gridPos = new Vector2Int(x, z);
 
-            // Передаем hit.point.y третьим аргументом!
-            adder.Add(new PlaceBuildingCommand(gridPos, BuildingPrefab, hit.point.y));
+            BuildingGridData gridData = _prefabToBuild.GetComponent<BuildingGridData>();
+            int sizeX = gridData != null ? gridData.GridSize.x : 1;
+            int sizeZ = gridData != null ? gridData.GridSize.y : 1;
 
-            _isBuildMode = false;
+            if (!BuildingGridManager.Instance.IsAreaFree(gridPos, sizeX, sizeZ))
+            {
+                return;
+            }
+
+            adder.Add(new PlaceBuildingCommand(gridPos, _prefabToBuild, hit.point.y));
+            BuildingGridManager.Instance.OccupyArea(gridPos, sizeX, sizeZ);
+
+            CancelBuilding();
+        }
+    }
+
+    private void CancelBuilding()
+    {
+        _prefabToBuild = null;
+        if (_ghostObject != null) Destroy(_ghostObject);
+    }
+
+    private void SetGhostColor(GameObject obj, Color color)
+    {
+        foreach (var renderer in obj.GetComponentsInChildren<Renderer>())
+        {
+            foreach (var mat in renderer.materials)
+            {
+                mat.SetFloat("_Mode", 3);
+                mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+                mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+                mat.SetInt("_ZWrite", 0);
+                mat.DisableKeyword("_ALPHATEST_ON");
+                mat.EnableKeyword("_ALPHABLEND_ON");
+                mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+                mat.renderQueue = 3000;
+
+                mat.color = color;
+            }
         }
     }
 
@@ -99,15 +181,24 @@ public class MouseSelector : MonoBehaviour, IProtoInitSystem
             if (highlightComp != null && authoringComp != null)
             {
                 SelectObject(highlightComp, authoringComp);
+                ResourceGeneratorAuthoring resGen = component.GetComponent<ResourceGeneratorAuthoring>();
+                if (resGen != null && BuildingUIController.Instance != null)
+                {
+                    string title = resGen.ResourceToProduce == ResourceType.Wood ? "Лесопилка" :
+                                   resGen.ResourceToProduce == ResourceType.Coal ? "Угольная шахта" : "Постройка";
+                    BuildingUIController.Instance.ShowDetails(title, $"Добыча: {resGen.ResourceToProduce}", $"{resGen.BaseRate} / {resGen.CycleTime} сек");
+                }
             }
             else
             {
                 DeselectCurrent();
+                if (BuildingUIController.Instance != null) BuildingUIController.Instance.DetailsPanel.SetActive(false);
             }
         }
         else
         {
             DeselectCurrent();
+            if (BuildingUIController.Instance != null) BuildingUIController.Instance.DetailsPanel.SetActive(false);
         }
     }
 
@@ -119,18 +210,13 @@ public class MouseSelector : MonoBehaviour, IProtoInitSystem
 
     private void DeselectCurrent()
     {
-        foreach (var h in highlights.Values)
-            h.Unhighlight();
+        foreach (var h in highlights.Values) h.Unhighlight();
         highlights.Clear();
     }
 
     private void OnToggleRotate(InputAction.CallbackContext context)
     {
         if (adder == null) return;
-
-        foreach (var e in highlights.Keys)
-        {
-            adder.Add(new ToggleRotatingCommand(e));
-        }
+        foreach (var e in highlights.Keys) adder.Add(new ToggleRotatingCommand(e));
     }
 }
