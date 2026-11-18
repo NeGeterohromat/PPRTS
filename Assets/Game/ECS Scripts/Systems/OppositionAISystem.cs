@@ -8,7 +8,6 @@ public class OppositionAISystem : IProtoRunSystem, IProtoInitSystem
     private readonly int aiID = 2;
 
     [DI] private ICommandAdder adder;
-    [DI] private EntityPrefabDatabase prefabDatabase;
     [DI] private GameAspect aspect;
 
     private ProtoWorld world;
@@ -33,7 +32,7 @@ public class OppositionAISystem : IProtoRunSystem, IProtoInitSystem
         if (!isSpawned && Time.realtimeSinceStartup >= spawnTimeInSeconds) 
         {
             isSpawned = true;
-            adder.Add(new CreateEntityCommand(prefabDatabase.Get(EntityType.RotatingCircle), new Vector3(5, 0, 5), aiID));
+            adder.Add(new CreateEntityCommand(EntityType.RotatingCircle, new Vector3(5, 0, 5), aiID));
         }
 
         if (!isEntity && isSpawned) 

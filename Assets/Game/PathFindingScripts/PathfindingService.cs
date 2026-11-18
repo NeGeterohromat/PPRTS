@@ -5,10 +5,10 @@ using UnityEngine;
 
 public class PathfindingService
 {
-    private const float CellLength = 3f; // замените на вашу константу
     private const float RandomDiffRadius = 0.1f; // постройка отступает от края клетки на 0.1
+    [DI] MouseSelector mouseSelector;
 
-    [DI] private BuildingData buildingData;
+    //[DI] private BuildingData buildingData;
 
     private struct Vertex : IEquatable<Vertex>
     {
@@ -48,7 +48,7 @@ public class PathfindingService
         // Если хотя бы одна свободна — проход возможен.
         if (Mathf.Abs(dx) == 1 && Mathf.Abs(dz) == 1)
         {
-            var c1 = buildingData.GetDataInPosition(new Vector2Int(x1, z1));
+            var c1 = BuildingGridManager.Instance.GetDataInPosition(new Vector2Int(x1, z1));
             return !c1.isBuilding;
         }
 
@@ -70,8 +70,8 @@ public class PathfindingService
 
         if (dz == 0) // горизонтальное ребро
         {
-            var lower = buildingData.GetDataInPosition(new Vector2Int(x1, z1 - 1));
-            var upper = buildingData.GetDataInPosition(new Vector2Int(x1, z1));
+            var lower = BuildingGridManager.Instance.GetDataInPosition(new Vector2Int(x1, z1 - 1));
+            var upper = BuildingGridManager.Instance.GetDataInPosition(new Vector2Int(x1, z1));
             if (!lower.isBuilding || !upper.isBuilding) return true;
             // Обе заняты. Проверим, является ли граница внешней хотя бы для одной.
             // Если upper.isDownBorder == true, значит снизу от upper пусто или другая постройка? Нет, isDownBorder означает,
@@ -84,8 +84,8 @@ public class PathfindingService
         }
         else // вертикальное ребро (dx == 0)
         {
-            var left = buildingData.GetDataInPosition(new Vector2Int(x1 - 1, z1));
-            var right = buildingData.GetDataInPosition(new Vector2Int(x1, z1));
+            var left = BuildingGridManager.Instance.GetDataInPosition(new Vector2Int(x1 - 1, z1));
+            var right = BuildingGridManager.Instance.GetDataInPosition(new Vector2Int(x1, z1));
             if (!left.isBuilding || !right.isBuilding) return true;
             return right.isLeftBorder || left.isRightBorder;
         }
@@ -223,12 +223,13 @@ public class PathfindingService
     // Поиск ближайшей свободной точки, если цель внутри постройки
     public Vector2 ResolveGoal(Vector2 goal)
     {
+        var CellLength = mouseSelector.GridSize;
         // небольшой разброс, чтобы все юниты не отправлялись в одну точку
         var randomShift = UnityEngine.Random.insideUnitCircle * RandomDiffRadius;        
 
         var cellWithoutRound = new Vector2(goal.x / CellLength, goal.y / CellLength);
         var cell = new Vector2Int(Mathf.FloorToInt(goal.x / CellLength), Mathf.FloorToInt(goal.y / CellLength));
-        var data = buildingData.GetDataInPosition(cell);
+        var data = BuildingGridManager.Instance.GetDataInPosition(cell);
         if (!data.isBuilding) return goal + randomShift;
 
         var res = goal;
@@ -238,7 +239,7 @@ public class PathfindingService
         {
             var neighbor = cell + dir;
             Debug.Log($"dir {dir} {neighbor}");
-            var nd = buildingData.GetDataInPosition(neighbor);
+            var nd = BuildingGridManager.Instance.GetDataInPosition(neighbor);
 
             if (Mathf.Abs(dir.x) == Mathf.Abs(dir.y))
             {
@@ -303,6 +304,7 @@ public class PathfindingService
     // Основной поиск пути между двумя мировыми точками
     public List<Vector2> FindPath(Vector2 start, Vector2 end)
     {
+        var CellLength = mouseSelector.GridSize;
         // Преобразуем мировые координаты в вершины сетки
         // Вершина (i,j) соответствует мировой точке (i * CellLength, j * CellLength)
         Vertex startV = new Vertex(
@@ -389,9 +391,10 @@ public class PathfindingService
 
     private bool IsNodeInOneCellWithVector(Vector2 vec, Vertex node)
     {
+        var CellLength = mouseSelector.GridSize;
         var cell = new Vector2Int(Mathf.FloorToInt(vec.x / CellLength), Mathf.FloorToInt(vec.y / CellLength));
         // Если вектор попал внутрь здания, мы не будем пропусать ни один ход.
-        if (buildingData.GetDataInPosition(cell).isBuilding) return false;
+        if (BuildingGridManager.Instance.GetDataInPosition(cell).isBuilding) return false;
 
         var v1 = new Vertex(Mathf.CeilToInt(vec.x / CellLength), Mathf.CeilToInt(vec.y / CellLength));
         var v2 = new Vertex(Mathf.FloorToInt(vec.x / CellLength), Mathf.CeilToInt(vec.y / CellLength));

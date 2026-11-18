@@ -217,15 +217,6 @@ public class BuildingData
     }}
 };
 
-    public struct PositionData
-    {
-        public bool isBuilding;
-        public bool isUpBorder;
-        public bool isDownBorder;
-        public bool isLeftBorder;
-        public bool isRightBorder;
-    }
-
     public PositionData GetDataInPosition(Vector2Int position)
     {
         // Ваша реализация

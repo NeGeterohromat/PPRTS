@@ -8,19 +8,19 @@ using UnityEngine;
 
 public class CreateEntityCommand : ICommand
 {
-    private GameObject Prefab;
+    private EntityType type;
     private Vector3 position;
     private int senderId;
-    public CreateEntityCommand(GameObject Prefab, Vector3 position, int senderId) 
+    public CreateEntityCommand(EntityType type, Vector3 position, int senderId) 
     {
-        this.Prefab = Prefab;
+        this.type = type;
         this.senderId = senderId;
         this.position = position;
     }
 
     public void Execute()
     {
-        var obj = GameObject.Instantiate(Prefab, position, Quaternion.identity);
+        var obj = GameObject.Instantiate(PrefabDatabase.GetPrefab<EntityType>((int)type), position, Quaternion.identity);
 
         var comps = obj.GetComponent<ProtoUnityAuthoring>().Components;
         var ownerComp = comps.Where(c=>c.GetType()==typeof(OwnerComponent)).First();

@@ -30,9 +30,8 @@ public sealed class EcsStartup : MonoBehaviour
             .AddService(adder, typeof(ICommandAdder))
             .AddService(popper, typeof(ICommandPopper))
             .AddService(actions, typeof(InputSystem_Actions))
-            .AddService(new EntityPrefabDatabase())
-            .InitHere<EntityPrefabDatabase>()
             .AddService(mouseSelector)
+            .InitHere<MouseSelector>()
             .AddService(new BuildingData())
             .AddService(new PathfindingService())
             .AddService(new BuildingEvents())
@@ -51,7 +50,8 @@ public sealed class EcsStartup : MonoBehaviour
         CreatePlayer(1);
         CreatePlayer(2);
         _systems.Init();
-        //mouseSelector.Init(_systems);
+
+        PrefabDatabase.Init();
     }
 
     private void CreatePlayer(int id)

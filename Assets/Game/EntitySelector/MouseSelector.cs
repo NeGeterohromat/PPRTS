@@ -9,7 +9,7 @@ using UnityEngine.LightTransport;
 using static UnityEngine.EventSystems.EventTrigger;
 using UnityEngine.EventSystems;
 
-public class MouseSelector : MonoBehaviour, IProtoInitSystem
+public class MouseSelector : MonoBehaviour, IProtoInitService
 {
     [SerializeField] private GameObject LastClickedVisual;
     [SerializeField] private RectTransform _selectionBox;
@@ -22,7 +22,6 @@ public class MouseSelector : MonoBehaviour, IProtoInitSystem
     [DI] private GameAspect gameAspect;
     [DI] private InputSystem_Actions actions;
     [DI] private ICommandAdder adder;
-    [DI] private EntityPrefabDatabase entities;
     [DI] private ThisPlayerID playerID;
 
     private bool _isMultySelecting;
@@ -68,8 +67,9 @@ public class MouseSelector : MonoBehaviour, IProtoInitSystem
     {
         if (Mouse.current == null) return;
 
-        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
-            return;
+        // break selection logic
+        //if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) 
+        //return;
 
         Vector2 mousePosition = Mouse.current.position.ReadValue();
         Ray ray = mainCamera.ScreenPointToRay(mousePosition);
@@ -87,7 +87,7 @@ public class MouseSelector : MonoBehaviour, IProtoInitSystem
                 CancelBuilding();
             }
         }
-        else if (Mouse.current.leftButton.wasPressedThisFrame)
+        else
         {
             TrySelectObject(ray);
         }
@@ -294,6 +294,8 @@ public class MouseSelector : MonoBehaviour, IProtoInitSystem
 
     private void FinishMultySelection()
     {
+        Debug.Log("sssssssssssssssssssssssss");
+
         _endPosition = Mouse.current.position.ReadValue();
 
         UpdateSelectionBox();
@@ -414,7 +416,7 @@ public class MouseSelector : MonoBehaviour, IProtoInitSystem
 
     private void OnCreateCircleEntity(InputAction.CallbackContext context)
     {
-        adder.Add(new CreateEntityCommand(entities.Get(EntityType.RotatingCircle), 
+        adder.Add(new CreateEntityCommand(EntityType.RotatingCircle, 
             new Vector3(lastClickedPoint.x, 0, lastClickedPoint.z), 
             playerID.ID));
     }

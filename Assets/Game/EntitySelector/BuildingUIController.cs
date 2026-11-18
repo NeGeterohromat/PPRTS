@@ -6,18 +6,14 @@ public class BuildingUIController : MonoBehaviour
 {
     public static BuildingUIController Instance { get; private set; }
 
-    [Header("Панели")]
+    [Header("пїЅпїЅпїЅпїЅпїЅпїЅ")]
     public GameObject ConstructionPanel;
     public GameObject DetailsPanel;
 
-    [Header("Префабы зданий")]
-    public GameObject OilRigPrefab;
-    public GameObject GasRigPrefab;
-
-    [Header("Ссылки")]
+    [Header("пїЅпїЅпїЅпїЅпїЅпїЅ")]
     public MouseSelector mouseSelector;
 
-    [Header("Тексты панели деталей (TMP)")]
+    [Header("пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ (TMP)")]
     public TextMeshProUGUI TitleText;       
     public TextMeshProUGUI ResourceTypeText; 
     public TextMeshProUGUI ProductionRateText; 
@@ -37,14 +33,14 @@ public class BuildingUIController : MonoBehaviour
 
     public void SelectOilRig()
     {
-        _currentlySelectedPrefab = OilRigPrefab;
-        ShowDetails("Нефтяная вышка", "Добыча нефти", "120/ч");
+        _currentlySelectedPrefab = PrefabDatabase.GetPrefab<BuildingType>((int)BuildingType.OilStation);
+        ShowDetails("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ", "пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ", "120/пїЅ");
     }
 
     public void SelectGasRig()
     {
-        _currentlySelectedPrefab = GasRigPrefab;
-        ShowDetails("Газовая вышка", "Добыча газа", "90/ч");
+        _currentlySelectedPrefab = PrefabDatabase.GetPrefab<BuildingType>((int)BuildingType.GasStation);
+        ShowDetails("пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ", "пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ", "90/пїЅ");
     }
 
     public void ShowDetails(string title, string resourceType, string rate)
