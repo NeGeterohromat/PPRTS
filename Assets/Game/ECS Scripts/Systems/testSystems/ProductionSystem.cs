@@ -42,11 +42,13 @@ public class ProductionSystem : IProtoInitSystem, IProtoRunSystem
                     {
                         case ResourceType.Wood: inv.Wood += prod.BaseRate; break;
                         case ResourceType.Coal: inv.Coal += prod.BaseRate; break;
-                        case ResourceType.Food: inv.Food += prod.BaseRate; break;
+                        //case ResourceType.Steel: inv.Steel += prod.BaseRate; break;
+                        case ResourceType.Oil: inv.Oil += prod.BaseRate; break; 
+                        case ResourceType.Gas: inv.Gas += prod.BaseRate; break; 
                     }
 
-                    Debug.Log($"[Сбор ресурсов] Игрок получил {prod.BaseRate} {prod.OutputResource}. " +
-                              $"Всего в инвентаре: Дерево={inv.Wood}, Уголь={inv.Coal}");
+                    Debug.Log($"[Сбор] Здание добыло {prod.BaseRate} {prod.OutputResource}. " +
+                              $"В инвентаре: Нефть={inv.Oil}, Газ={inv.Gas}, Уголь={inv.Coal}");
                 }
             }
         }

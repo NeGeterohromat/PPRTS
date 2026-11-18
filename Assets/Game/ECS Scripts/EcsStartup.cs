@@ -5,6 +5,8 @@ using UnityEngine;
 
 public sealed class EcsStartup : MonoBehaviour
 {
+    public static CommandQueue InstanceQueue { get; private set; }
+
     private IProtoSystems _systems;
     private InputSystem_Actions actions;
     [SerializeField] private MouseSelector mouseSelector;
@@ -16,6 +18,7 @@ public sealed class EcsStartup : MonoBehaviour
         var playerID = new ThisPlayerID() { ID = 1 };
 
         CommandQueue fullQueue = new CommandQueue();
+        InstanceQueue = fullQueue; 
         ICommandAdder adder = fullQueue;
         ICommandPopper popper = fullQueue;
         actions = new();
@@ -48,7 +51,7 @@ public sealed class EcsStartup : MonoBehaviour
         CreatePlayer(1);
         CreatePlayer(2);
         _systems.Init();
-        mouseSelector.Init(_systems);
+        //mouseSelector.Init(_systems);
     }
 
     private void CreatePlayer(int id)
