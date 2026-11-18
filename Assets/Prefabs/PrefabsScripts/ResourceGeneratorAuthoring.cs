@@ -31,7 +31,5 @@ public class ResourceGeneratorAuthoring : ProtoUnityAuthoring
             CycleTime = CycleTime,
             Progress = 0
         };
-
-        Debug.Log($"Здание {gameObject.name} создано в ECS и начинает добычу {ResourceToProduce}");
     }
 }
