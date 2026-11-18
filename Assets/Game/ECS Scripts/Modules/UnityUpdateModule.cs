@@ -18,6 +18,7 @@ public class UnityUpdateModule : IProtoModule
     {
         systems.AddSystem(new CommandExecuteSystem())
             .AddSystem(new CheckCameraViewObjectsSystem())
-            .AddSystem(new UnityUpdateTransformSystem());
+            .AddSystem(new UnityUpdateTransformSystem())
+            .AddSystem(new HighlightSystem());
     }
 }

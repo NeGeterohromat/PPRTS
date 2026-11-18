@@ -1,18 +1,33 @@
 using Leopotam.EcsProto;
 using Leopotam.EcsProto.QoL;
 using Leopotam.EcsProto.Unity;
+using NUnit.Framework;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.LightTransport;
+using static UnityEngine.EventSystems.EventTrigger;
 using UnityEngine.EventSystems;
 
 public class MouseSelector : MonoBehaviour, IProtoInitSystem
 {
+    [SerializeField] private GameObject LastClickedVisual;
+    [SerializeField] private RectTransform _selectionBox;
     private Camera mainCamera;
-    [DI] private InputSystem_Actions actions;
-    [DI] ICommandAdder adder;
+    private HashSet<ProtoPackedEntityWithWorld> highlights = new();
+    private bool isLastClickInEmpty = false;
+    private Vector3 lastClickedPoint;
 
-    private Dictionary<ProtoPackedEntityWithWorld, HighlightableObject> highlights = new();
+    [DI] private UnityUpdateAspect updateAspect;
+    [DI] private GameAspect gameAspect;
+    [DI] private InputSystem_Actions actions;
+    [DI] private ICommandAdder adder;
+    [DI] private EntityPrefabDatabase entities;
+    [DI] private ThisPlayerID playerID;
+
+    private bool _isMultySelecting;
+    private Vector2 _startPosition;
+    private Vector2 _endPosition;
 
     private GameObject _prefabToBuild = null;
     private GameObject _ghostObject = null; 
@@ -28,7 +43,9 @@ public class MouseSelector : MonoBehaviour, IProtoInitSystem
 
     public void Init(IProtoSystems systems)
     {
-        if (actions != null) actions.Player.ToggleRotate.performed += OnToggleRotate;
+        actions.Player.ToggleRotate.performed += OnToggleRotate;
+        actions.Player.MoveEntities.performed += OnMoveEntities;
+        actions.Player.CreateCircleEntity.performed += OnCreateCircleEntity;
     }
 
     public void StartPlacementMode(GameObject prefab)
@@ -172,51 +189,233 @@ public class MouseSelector : MonoBehaviour, IProtoInitSystem
 
     private void TrySelectObject(Ray ray)
     {
-        if (Physics.Raycast(ray, out RaycastHit hit))
+    
+    
+    
+        if (!actions.UI.Alt.IsPressed())
         {
-            Component component = hit.collider;
-            HighlightableObject highlightComp = component.GetComponent<HighlightableObject>();
-            ProtoUnityAuthoring authoringComp = component.GetComponent<ProtoUnityAuthoring>();
+            if (_isMultySelecting)
+                UnviewMultySelectionBox();
 
-            if (highlightComp != null && authoringComp != null)
+            // 2. Проверяем клик через новый Input System
+            // Mouse.current.leftButton.wasPressedThisFrame - это аналог Input.GetMouseButtonDown(0)
+            if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
             {
-                SelectObject(highlightComp, authoringComp);
-                ResourceGeneratorAuthoring resGen = component.GetComponent<ResourceGeneratorAuthoring>();
-                if (resGen != null && BuildingUIController.Instance != null)
+                // 3. Получаем актуальную позицию мыши на экране
+                Vector2 mousePosition = Mouse.current.position.ReadValue();
+
+                // Ray ray = mainCamera.ScreenPointToRay(mousePosition);
+                RaycastHit hit;
+
+                if (Physics.Raycast(ray, out hit))
                 {
-                    string title = resGen.ResourceToProduce == ResourceType.Wood ? "Лесопилка" :
-                                   resGen.ResourceToProduce == ResourceType.Coal ? "Угольная шахта" : "Постройка";
-                    BuildingUIController.Instance.ShowDetails(title, $"Добыча: {resGen.ResourceToProduce}", $"{resGen.BaseRate} / {resGen.CycleTime} сек");
+                    Component component = hit.collider;
+                    HighlightableObject highlightComp = component.GetComponent<HighlightableObject>();
+                    ProtoUnityAuthoring authoringComp = component.GetComponent<ProtoUnityAuthoring>();
+
+                    if (highlightComp != null)
+                    {
+                        if (authoringComp != null)
+                        {
+                            SelectFromObject(authoringComp);
+                            
+                            ResourceGeneratorAuthoring resGen = component.GetComponent<ResourceGeneratorAuthoring>();
+                            if (resGen != null && BuildingUIController.Instance != null)
+                            {
+                                string title = resGen.ResourceToProduce == ResourceType.Wood ? "Лесопилка" :
+                                resGen.ResourceToProduce == ResourceType.Coal ? "Угольная шахта" : "Постройка";
+                                BuildingUIController.Instance.ShowDetails(title, $"Добыча: {resGen.ResourceToProduce}", $"{resGen.BaseRate} / {resGen.CycleTime} сек");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (isLastClickInEmpty)
+                        {
+                            DeselectCurrent();
+                            lastClickedPoint = Vector3.zero;
+                            isLastClickInEmpty = false;
+                        }
+                        else
+                        {
+                            lastClickedPoint = hit.point;
+                            isLastClickInEmpty = true;
+                            LastClickedVisual.transform.position = lastClickedPoint;
+                            LastClickedVisual.SetActive(true);
+                        }
+                    }
                 }
-            }
-            else
-            {
-                DeselectCurrent();
-                if (BuildingUIController.Instance != null) BuildingUIController.Instance.DetailsPanel.SetActive(false);
+                else
+                {
+                    DeselectCurrent();
+                    if (BuildingUIController.Instance != null) BuildingUIController.Instance.DetailsPanel.SetActive(false);
+                }
             }
         }
         else
         {
-            DeselectCurrent();
-            if (BuildingUIController.Instance != null) BuildingUIController.Instance.DetailsPanel.SetActive(false);
+            if (actions.UI.Click.WasPressedThisFrame())
+                StartMultySelection();
+
+            if (_isMultySelecting && actions.UI.Click.IsPressed())
+                UpdateMultySelection();
+
+            if (_isMultySelecting && actions.UI.Click.WasReleasedThisFrame())
+                FinishMultySelection();
         }
     }
+    
+    
 
-    private void SelectObject(HighlightableObject h, ProtoUnityAuthoring p)
+
+
+                
+
+           
+
+
+    private void StartMultySelection()
     {
-        h.Highlight();
-        highlights[p.Entity()] = h;
+        _startPosition = Mouse.current.position.ReadValue();
+        _endPosition = _startPosition;
+
+        _isMultySelecting = true;
+
+        if (_selectionBox != null)
+            _selectionBox.gameObject.SetActive(true);
+    }
+
+    private void UpdateMultySelection()
+    {
+        _endPosition = Mouse.current.position.ReadValue();
+
+        UpdateSelectionBox();
+    }
+
+    private void FinishMultySelection()
+    {
+        _endPosition = Mouse.current.position.ReadValue();
+
+        UpdateSelectionBox();
+        MultySelectEntities();
+
+        _isMultySelecting = false;
+
+        if (_selectionBox != null)
+            _selectionBox.gameObject.SetActive(false);
+    }
+
+    private void UnviewMultySelectionBox()
+    {
+        _isMultySelecting = false;
+
+        if (_selectionBox != null)
+            _selectionBox.gameObject.SetActive(false);
+    }
+
+    private void UpdateSelectionBox()
+    {
+        if (_selectionBox == null)
+            return;
+
+        Vector2 min = Vector2.Min(_startPosition, _endPosition);
+        Vector2 max = Vector2.Max(_startPosition, _endPosition);
+
+        _selectionBox.position = (min + max) * 0.5f;
+        _selectionBox.sizeDelta = max - min;
+    }
+
+    private void MultySelectEntities()
+    {
+        DeselectCurrent();
+
+        Vector2 min = Vector2.Min(_startPosition, _endPosition);
+        Vector2 max = Vector2.Max(_startPosition, _endPosition);
+
+        foreach (var entity in updateAspect.VisibleEntityIterator)
+        {
+            if (gameAspect.OwnerComponents.Get(entity).OwnerID != playerID.ID) continue;
+
+            ref var transformComponent = ref updateAspect.TransformDataPool.Get(entity);
+
+            Vector3 screenPosition = mainCamera.WorldToScreenPoint(
+                transformComponent.Position
+            );
+
+            if (screenPosition.z <= 0)
+                continue;
+
+            Vector2 position = new(
+                screenPosition.x,
+                screenPosition.y
+            );
+
+            bool inside =
+                position.x >= min.x &&
+                position.x <= max.x &&
+                position.y >= min.y &&
+                position.y <= max.y;
+
+            if (!inside)
+                continue;
+
+            ref var highlightTag = ref updateAspect.HighlightedTagPool.Add(entity);
+            highlightTag.IsGOHighlighted = false;
+
+            var pack = updateAspect.World().PackEntityWithWorld(entity);
+            highlights.Add(pack);
+        }
+
+        isLastClickInEmpty = false;
+    }
+
+    private void SelectFromObject(ProtoUnityAuthoring p)
+    {
+        p.Entity().TryUnpack(out _, out var e);
+
+        if (!gameAspect.OwnerComponents.Has(e) ||
+            gameAspect.OwnerComponents.Get(e).OwnerID != playerID.ID) return;
+
+        if (!updateAspect.HighlightedTagPool.Has(e))
+        {
+            ref var highlightTag = ref updateAspect.HighlightedTagPool.Add(e);
+            highlightTag.IsGOHighlighted = false;
+        }
+        highlights.Add(p.Entity());
     }
 
     private void DeselectCurrent()
     {
-        foreach (var h in highlights.Values) h.Unhighlight();
+        foreach (var h in highlights)
+        {
+            h.TryUnpack(out _, out var e);
+            if (!updateAspect.UnhighlightEventPool.Has(e))
+                updateAspect.UnhighlightEventPool.Add(e);
+        }
         highlights.Clear();
+        LastClickedVisual.SetActive(false);
     }
 
     private void OnToggleRotate(InputAction.CallbackContext context)
     {
-        if (adder == null) return;
-        foreach (var e in highlights.Keys) adder.Add(new ToggleRotatingCommand(e));
+        foreach (var e in highlights)
+        {
+            adder.Add(new ToggleRotatingCommand(e));
+        }
+    }
+
+    private void OnMoveEntities(InputAction.CallbackContext context)
+    {
+        foreach (var e in highlights)
+        {
+            adder.Add(new MoveEntityCommand(e, lastClickedPoint, playerID.ID));
+        }
+    }
+
+    private void OnCreateCircleEntity(InputAction.CallbackContext context)
+    {
+        adder.Add(new CreateEntityCommand(entities.Get(EntityType.RotatingCircle), 
+            new Vector3(lastClickedPoint.x, 0, lastClickedPoint.z), 
+            playerID.ID));
     }
 }

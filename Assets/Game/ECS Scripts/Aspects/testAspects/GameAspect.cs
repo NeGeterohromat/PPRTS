@@ -3,7 +3,7 @@ using Leopotam.EcsProto;
 using Leopotam.EcsProto.QoL;
 using Leopotam.EcsProto.Unity;
 
-public class GameAspect : BaseAspect
+public class GameAspect : ProtoAspectInject
 {
     public ProtoPool<PositionComponent> Positions;
     public ProtoPool<ProductionComponent> Productions;
@@ -12,6 +12,7 @@ public class GameAspect : BaseAspect
 
     public ProtoPool<PlayerTagComponent> Players;
     public ProtoPool<PlayerInventoryComponent> Inventories;
+    public ProtoPool<OwnerComponent> OwnerComponents;
 }
 
 [ProtoUnityAuthoring]
@@ -45,7 +46,13 @@ public struct ConsumptionComponent
 
 public struct PlayerTagComponent
 {
-  
+    public int ID;
+}
+
+[ProtoUnityAuthoring]
+public struct OwnerComponent
+{
+    public int OwnerID;
 }
 
 public struct PlayerInventoryComponent

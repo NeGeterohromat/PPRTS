@@ -26,8 +26,12 @@ public class CheckCameraViewObjectsSystem : IProtoInitSystem, IProtoRunSystem
                 ref var transformComponent = ref unityAspect.TransformDataPool.Get(entity);
                 if (IsObjectVisible(cameraTransform.Position,transformComponent.Position))
                 {
-                    if (!unityAspect.NeedTransformUpdateByCameraEventPool.Has(entity))
-                        unityAspect.NeedTransformUpdateByCameraEventPool.Add(entity);
+                    if (!unityAspect.VisibleByCameraTagPool.Has(entity))
+                        unityAspect.VisibleByCameraTagPool.Add(entity);
+                }
+                else
+                {
+                    unityAspect.VisibleByCameraTagPool.DelIfExists(entity);
                 }
             }
         }
@@ -35,6 +39,7 @@ public class CheckCameraViewObjectsSystem : IProtoInitSystem, IProtoRunSystem
 
     private bool IsObjectVisible(Vector3 cameraPos, Vector3 objPos)
     {
-        return (cameraPos - objPos).magnitude < 4;
+        var diff = objPos - cameraPos;
+        return diff.z > -0.5 && diff.z < 15.5 && diff.x > -13.5 && diff.x < 18;
     }
 }

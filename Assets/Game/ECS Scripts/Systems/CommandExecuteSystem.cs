@@ -4,13 +4,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.LightTransport;
 
-public class CommandExecuteSystem : IProtoInitSystem, IProtoRunSystem
+public class CommandExecuteSystem : IProtoRunSystem
 {
     [DI] private ICommandPopper _commandQueue;
-
-    public void Init(IProtoSystems systems) 
-    {
-    }
 
     public void Run()
     {

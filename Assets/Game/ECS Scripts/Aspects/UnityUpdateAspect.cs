@@ -4,68 +4,46 @@ using Leopotam.EcsProto.Unity;
 using System;
 using UnityEngine;
 
-public class UnityUpdateAspect : IProtoAspect
+public class UnityUpdateAspect : ProtoAspectInject
 {
-    private ProtoWorld _world;
+    public ProtoPool<VisibleByCameraTagComponent> VisibleByCameraTagPool;
+    public ProtoPool<NeedTransformUpdateEventComponent> NeedTransformUpdateEventPool;
+    public ProtoPool<TransformDataComponent> TransformDataPool;
+    public ProtoPool<GameObjectComponent> GameObjectPool;
+    public ProtoPool<HighlightedTagComponent> HighlightedTagPool;
+    public ProtoPool<UnhighlightEventComponent> UnhighlightEventPool;
 
-    public ProtoPool<NeedTransformUpdateByCameraEventComponent> NeedTransformUpdateByCameraEventPool = new();
-    public ProtoPool<NeedTransformUpdateEventComponent> NeedTransformUpdateEventPool = new();
-    public ProtoPool<TransformDataComponent> TransformDataPool = new();
-    public ProtoPool<GameObjectComponent> GameObjectPool = new();
-    public ProtoPool<NewlyCreatedComandableEntityEventComponent> NewlyCreatedComandableEntityEventPool = new();
-    public ProtoPool<NewlyDeletedComandableEntityEventComponent> NewlyDeletedComandableEntityEventPool = new();
-    public ProtoPool<ComandableEntityTagComponent> ComandableEntityTagPool = new();
-
-    public ProtoIt TransformUpdateIterator;
-    public ProtoIt TransformDataIterator;
-    public ProtoIt NewlyCreatedComandableEntityIterator;
-    public ProtoIt NewlyDeletedComandableEntityIterator;
-
-    public void Init(ProtoWorld world)
-    {
-        _world = world;
-
-        world.AddAspect(this);
-
-        world.AddPool(NeedTransformUpdateByCameraEventPool);
-        world.AddPool(NeedTransformUpdateEventPool);
-        world.AddPool(TransformDataPool);
-        world.AddPool(GameObjectPool);
-        world.AddPool(NewlyCreatedComandableEntityEventPool);
-        world.AddPool(NewlyDeletedComandableEntityEventPool);
-        world.AddPool(ComandableEntityTagPool);
-
-        TransformUpdateIterator = new(new[] 
-        { 
-            typeof(NeedTransformUpdateByCameraEventComponent),  
+    public ProtoIt TransformUpdateIterator = new(new[]
+        {
+            typeof(VisibleByCameraTagComponent),
             typeof(NeedTransformUpdateEventComponent),
             typeof(TransformDataComponent),
             typeof(GameObjectComponent)
         });
-
-        TransformDataIterator = new(new[]
+    public ProtoIt TransformDataIterator = new(new[]
         {
             typeof(TransformDataComponent)
         });
-        NewlyCreatedComandableEntityIterator = new(new[] { typeof(NewlyCreatedComandableEntityEventComponent) });
-        NewlyDeletedComandableEntityIterator = new(new[] { typeof(NewlyDeletedComandableEntityEventComponent) });
-    }
-
-    public void PostInit()
+    public ProtoIt VisibleEntityIterator = new (new[]
+        {
+            typeof(VisibleByCameraTagComponent),
+            typeof(OwnerComponent),
+            typeof(TransformDataComponent)
+        });
+    public ProtoIt HighlightedTagIterator = new(new[]
     {
-        TransformUpdateIterator.Init(_world);
-        TransformDataIterator.Init(_world);
-        NewlyCreatedComandableEntityIterator.Init(_world);
-        NewlyDeletedComandableEntityIterator.Init(_world);
-    }
-
-    public ProtoWorld World()
-    {
-        return _world;
-    }
+        typeof(HighlightedTagComponent),
+        typeof(GameObjectComponent)
+    });
+    public ProtoIt UnhighlightEventIterator = new(new[]
+        {
+            typeof(UnhighlightEventComponent),
+            typeof(HighlightedTagComponent),
+            typeof(GameObjectComponent)
+        });
 }
 
-public struct NeedTransformUpdateByCameraEventComponent { } // Близко ли камера
+public struct VisibleByCameraTagComponent { } // Близко ли камера
 
 public struct NeedTransformUpdateEventComponent { } // А менялась ли вообще позиция объекта
 
@@ -90,23 +68,9 @@ public struct GameObjectComponent : IProtoUnityAuthoring
     }
 }
 
-[ProtoUnityAuthoring]
-public struct NewlyCreatedComandableEntityEventComponent : IProtoUnityAuthoring 
+public struct HighlightedTagComponent 
 {
-    public GameObject Obj;
-
-    public void Authoring(
-        in ProtoPackedEntityWithWorld entity,
-        GameObject go)
-    {
-        Obj = go;
-    }
+    public bool IsGOHighlighted;
 }
 
-public struct ComandableEntityTagComponent 
-{
-    public int Id;
-}
-
-public struct NewlyDeletedComandableEntityEventComponent { }
-
+public struct UnhighlightEventComponent { }
