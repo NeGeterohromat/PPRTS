@@ -13,6 +13,8 @@ public class MouseSelector : MonoBehaviour, IProtoInitService
 {
     [SerializeField] private GameObject LastClickedVisual;
     [SerializeField] private RectTransform _selectionBox;
+    private Canvas _canvas;
+    private RectTransform _canvasRect;
     private Camera mainCamera;
     private HashSet<ProtoPackedEntityWithWorld> highlights = new();
     private bool isLastClickInEmpty = false;
@@ -38,6 +40,8 @@ public class MouseSelector : MonoBehaviour, IProtoInitService
     void Start()
     {
         if (mainCamera == null) mainCamera = Camera.main;
+        _canvas = _selectionBox.GetComponentInParent<Canvas>();
+        _canvasRect = _canvas.transform as RectTransform;
     }
 
     public void Init(IProtoSystems systems)
@@ -294,8 +298,6 @@ public class MouseSelector : MonoBehaviour, IProtoInitService
 
     private void FinishMultySelection()
     {
-        Debug.Log("sssssssssssssssssssssssss");
-
         _endPosition = Mouse.current.position.ReadValue();
 
         UpdateSelectionBox();
@@ -317,13 +319,25 @@ public class MouseSelector : MonoBehaviour, IProtoInitService
 
     private void UpdateSelectionBox()
     {
-        if (_selectionBox == null)
-            return;
 
-        Vector2 min = Vector2.Min(_startPosition, _endPosition);
-        Vector2 max = Vector2.Max(_startPosition, _endPosition);
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            _canvasRect,
+            _startPosition,
+            null,
+            out Vector2 localStart
+        );
 
-        _selectionBox.position = (min + max) * 0.5f;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            _canvasRect,
+            _endPosition,
+            null,
+            out Vector2 localEnd
+        );
+
+        Vector2 min = Vector2.Min(localStart, localEnd);
+        Vector2 max = Vector2.Max(localStart, localEnd);
+
+        _selectionBox.anchoredPosition = (min + max) * 0.5f;
         _selectionBox.sizeDelta = max - min;
     }
 
@@ -360,7 +374,7 @@ public class MouseSelector : MonoBehaviour, IProtoInitService
 
             if (!inside)
                 continue;
-
+            if (updateAspect.HighlightedTagPool.Has(entity)) continue;                
             ref var highlightTag = ref updateAspect.HighlightedTagPool.Add(entity);
             highlightTag.IsGOHighlighted = false;
 
