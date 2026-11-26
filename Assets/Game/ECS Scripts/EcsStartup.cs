@@ -68,6 +68,7 @@ public sealed class EcsStartup : MonoBehaviour
         inv.Wood = 0;
         inv.Coal = 0;
         inv.Food = 0;
+        inv.Money = 100_000;
         Debug.Log($"Игрок {id} создан");
     }
 

@@ -8,6 +8,7 @@ public class ResourceGeneratorAuthoring : ProtoUnityAuthoring
     public ResourceType ResourceToProduce = ResourceType.Wood;
     public float BaseRate = 5f;
     public float CycleTime = 2f;
+    public float MaxResourceAmount = 40f;
 
     protected override void Start()
     {
@@ -29,7 +30,9 @@ public class ResourceGeneratorAuthoring : ProtoUnityAuthoring
             OutputResource = ResourceToProduce,
             BaseRate = BaseRate,
             CycleTime = CycleTime,
-            Progress = 0
+            Progress = 0,
+            CurrentResourseAmount = 0,
+            MaxResourseAmount = MaxResourceAmount
         };
     }
 }

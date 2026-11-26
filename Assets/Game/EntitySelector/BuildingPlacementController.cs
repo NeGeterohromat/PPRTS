@@ -1,5 +1,7 @@
 using Leopotam.EcsProto;
 using Leopotam.EcsProto.QoL;
+using Leopotam.EcsProto.Unity;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -13,6 +15,8 @@ public class BuildingPlacementController : IProtoInitService
     private GameObject _ghostObject;
 
     [DI] private ICommandAdder _adder;
+    [DI] private ThisPlayerID _playerID;
+    [DI] private GameAspect aspect;
     private Camera _mainCamera; // или брать Camera.main внутри
 
     public bool IsPlacing => _prefabToBuild != null && _ghostObject != null;
@@ -112,10 +116,29 @@ public class BuildingPlacementController : IProtoInitService
 
         if (!BuildingGridManager.Instance.IsAreaFree(gridPos, sizeX, sizeZ)) return;
 
-        _adder.Add(new PlaceBuildingCommand(gridPos, _prefabToBuild, hit.point.y));
+        if (!IsPlayerCanPayPrice()) return;
+
+        _adder.Add(new PlaceBuildingCommand(gridPos, _prefabToBuild, hit.point.y, _playerID.ID));
         BuildingGridManager.Instance.OccupyArea(gridPos, sizeX, sizeZ);
 
         Cancel();
+    }
+
+    private bool IsPlayerCanPayPrice()
+    {
+        var component = (PlacableBuildingComponent)_prefabToBuild.GetComponent<ProtoUnityAuthoring>()
+            .Components
+            .First(c => c.GetType() == typeof(PlacableBuildingComponent));
+
+        foreach (var player in aspect.PlayerIterator)
+        {
+            ref var p = ref aspect.Players.Get(player);
+            if (p.ID != _playerID.ID) continue;
+
+            ref var inv = ref aspect.Inventories.Get(player);
+            return inv.Money >= component.Price;
+        }
+        return false;
     }
 
     private void SetGhostColor(GameObject obj, Color color)

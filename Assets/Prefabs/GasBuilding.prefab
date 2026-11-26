@@ -132,9 +132,12 @@ MonoBehaviour:
   - rid: 2512193038907080768
   - rid: 2512193038907080769
   - rid: 2512193038907080770
+  - rid: 7766260245532770368
+  - rid: 7766260245532770371
   ResourceToProduce: 6
   BaseRate: 5
   CycleTime: 2
+  MaxResourceAmount: 40
   references:
     version: 2
     RefIds:
@@ -155,6 +158,16 @@ MonoBehaviour:
         BaseRate: 0
         Progress: 0
         CycleTime: 0
+        CurrentResourseAmount: 0
+        MaxResourseAmount: 0
+    - rid: 7766260245532770368
+      type: {class: PlacableBuildingComponent, ns: , asm: Assembly-CSharp}
+      data:
+        Price: 14000
+    - rid: 7766260245532770371
+      type: {class: OwnerComponent, ns: , asm: Assembly-CSharp}
+      data:
+        OwnerID: 0
 --- !u!114 &2546976938397201314
 MonoBehaviour:
   m_ObjectHideFlags: 0
