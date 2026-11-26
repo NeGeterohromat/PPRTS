@@ -1,8 +1,8 @@
-using UnityEngine;
+п»їusing UnityEngine;
 
 public class BuildingGridData : MonoBehaviour
 {
-    [Tooltip("Сколько клеток занимает здание по X и Z")]
+    [Tooltip("РЎРєРѕР»СЊРєРѕ РєР»РµС‚РѕРє Р·Р°РЅРёРјР°РµС‚ Р·РґР°РЅРёРµ РїРѕ X Рё Z")]
     public Vector2Int GridSize = new Vector2Int(1, 1);
 
     private void Awake()

@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using Leopotam.EcsProto;
 
 public class UnityUpdateTransformSystem : IProtoInitSystem, IProtoRunSystem

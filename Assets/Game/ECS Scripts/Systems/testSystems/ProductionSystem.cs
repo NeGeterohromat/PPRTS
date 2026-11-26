@@ -5,6 +5,8 @@ using UnityEngine;
 public class ProductionSystem : IProtoInitSystem, IProtoRunSystem
 {
     [DI] private GameAspect _aspect;
+    [DI] private UIEvents _uiEvents; 
+
     private ProtoIt _producers;
     private ProtoIt _players;
 
@@ -40,15 +42,23 @@ public class ProductionSystem : IProtoInitSystem, IProtoRunSystem
 
                     switch (prod.OutputResource)
                     {
-                        case ResourceType.Wood: inv.Wood += prod.BaseRate; break;
-                        case ResourceType.Coal: inv.Coal += prod.BaseRate; break;
-                        //case ResourceType.Steel: inv.Steel += prod.BaseRate; break;
-                        case ResourceType.Oil: inv.Oil += prod.BaseRate; break; 
-                        case ResourceType.Gas: inv.Gas += prod.BaseRate; break; 
+                        case ResourceType.Wood:
+                            inv.Wood += prod.BaseRate;
+                            _uiEvents.OnUpdateWood.Invoke(inv.Wood);
+                            break;
+                        case ResourceType.Coal:
+                            inv.Coal += prod.BaseRate;
+                            _uiEvents.OnUpdateCoal.Invoke(inv.Coal);
+                            break;
+                        case ResourceType.Oil:
+                            inv.Oil += prod.BaseRate;
+                            _uiEvents.OnUpdateOil.Invoke(inv.Oil);
+                            break;
+                        case ResourceType.Gas:
+                            inv.Gas += prod.BaseRate;
+                            _uiEvents.OnUpdateGas.Invoke(inv.Gas);
+                            break;
                     }
-
-                    Debug.Log($"[Сбор] Здание добыло {prod.BaseRate} {prod.OutputResource}. " +
-                              $"В инвентаре: Нефть={inv.Oil}, Газ={inv.Gas}, Уголь={inv.Coal}");
                 }
             }
         }

@@ -1,11 +1,11 @@
-using System.Collections.Generic;
+п»їusing System.Collections.Generic;
 using UnityEngine;
 
 public class BuildingGridManager : MonoBehaviour
 {
     public static BuildingGridManager Instance { get; private set; }
 
-    [Header("Разрыв между зданиями (в клетках)")]
+    [Header("Р Р°Р·СЂС‹РІ РјРµР¶РґСѓ Р·РґР°РЅРёСЏРјРё (РІ РєР»РµС‚РєР°С…)")]
     public int Padding = 1; 
 
     private HashSet<Vector2Int> _occupiedCells = new HashSet<Vector2Int>();

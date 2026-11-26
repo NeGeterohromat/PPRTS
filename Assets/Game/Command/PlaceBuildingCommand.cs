@@ -1,4 +1,4 @@
-using UnityEngine;
+п»їusing UnityEngine;
 
 public class PlaceBuildingCommand : ICommand
 {
@@ -17,12 +17,10 @@ public class PlaceBuildingCommand : ICommand
     {
         float cellSize = 1.0f;
 
-        // Берем размер здания из скрипта, как и в MouseSelector
         BuildingGridData gridData = _buildingPrefab.GetComponent<BuildingGridData>();
         int sizeX = gridData != null ? gridData.GridSize.x : 1;
         int sizeZ = gridData != null ? gridData.GridSize.y : 1;
 
-        // Центрируем здание (ТОЧНО ТАК ЖЕ, КАК ПРИЗРАК)
         float offsetX = (sizeX * cellSize) / 2f;
         float offsetZ = (sizeZ * cellSize) / 2f;
 
@@ -33,6 +31,6 @@ public class PlaceBuildingCommand : ICommand
         );
 
         Object.Instantiate(_buildingPrefab, worldPosition, Quaternion.identity);
-        Debug.Log($"Построено здание на {_gridPosition}");
+        Debug.Log($"РџРѕСЃС‚СЂРѕРµРЅРѕ Р·РґР°РЅРёРµ РЅР° {_gridPosition}");
     }
 }

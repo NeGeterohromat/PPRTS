@@ -1,4 +1,4 @@
-using Leopotam.EcsProto;
+﻿using Leopotam.EcsProto;
 using Leopotam.EcsProto.QoL;
 using Leopotam.EcsProto.Unity;
 using UnityEngine;
@@ -10,6 +10,7 @@ public sealed class EcsStartup : MonoBehaviour
     private IProtoSystems _systems;
     private InputSystem_Actions actions;
     [SerializeField] private MouseSelector mouseSelector;
+    [SerializeField] private UIEvents uiEvents;
 
     private void Awake()
     {
@@ -26,7 +27,8 @@ public sealed class EcsStartup : MonoBehaviour
             .AddModule(new AutoInjectModule(true))
             .AddService(adder,typeof(ICommandAdder))
             .AddService(popper,typeof(ICommandPopper))
-            .AddService(actions, typeof(InputSystem_Actions))            
+            .AddService(actions, typeof(InputSystem_Actions))
+            .AddService(uiEvents)
             //.AddService(mouseSelector)
             .AddModule(new UnityModule())
             .AddModule(new CameraMovementModule())
@@ -36,6 +38,7 @@ public sealed class EcsStartup : MonoBehaviour
             .AddSystem(new ProductionSystem())
             .AddSystem(new ConsumptionSystem())
             .AddSystem(mouseSelector);
+
 
         CreatePlayer();
         _systems.Init();
