@@ -9,6 +9,7 @@ public class ObjectSelectionController
 
     [DI] private SelectionManager _selection;
     [DI] private GameAspect _gameAspect;
+    [DI] private UnityUpdateAspect _updateAspect;
     [DI] private ThisPlayerID _playerID;
 
     public void SetLastClickedVisual(GameObject visual)
@@ -77,6 +78,8 @@ public class ObjectSelectionController
 
         if (!_gameAspect.OwnerComponents.Has(e) ||
             _gameAspect.OwnerComponents.Get(e).OwnerID != _playerID.ID) return;
+
+        if (_updateAspect.HasCommandTagPool.Has(e)) return;
 
         _selection.AddHighlight(authoring.Entity());
     }

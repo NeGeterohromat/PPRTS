@@ -10,7 +10,8 @@ public class MovementAspect : ProtoAspectInject
     public ProtoIt InMovementIterator = new(new[]
         {
             typeof(HasMovementGoalComponent),
-            typeof(TransformDataComponent)
+            typeof(TransformDataComponent),
+            typeof(HasCommandTagComponent)
         });
     public ProtoIt NeedCalculatePathIterator = new(new[]
     {

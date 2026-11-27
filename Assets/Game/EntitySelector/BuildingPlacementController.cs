@@ -17,6 +17,7 @@ public class BuildingPlacementController : IProtoInitService
     [DI] private ICommandAdder _adder;
     [DI] private ThisPlayerID _playerID;
     [DI] private GameAspect aspect;
+    [DI] private SelectionManager selectionManager;
     private Camera _mainCamera; // или брать Camera.main внутри
 
     public bool IsPlacing => _prefabToBuild != null && _ghostObject != null;
@@ -116,15 +117,22 @@ public class BuildingPlacementController : IProtoInitService
 
         if (!BuildingGridManager.Instance.IsAreaFree(gridPos, sizeX, sizeZ)) return;
 
-        if (!IsPlayerCanPayPrice()) return;
+        if (selectionManager.Highlights.Count == 0) { Debug.Log("0 builders are selected"); Cancel(); return; }
 
-        _adder.Add(new PlaceBuildingCommand(gridPos, _prefabToBuild, hit.point.y, _playerID.ID));
+        if (!TryPlayerPayPrice()) { Cancel(); return; }
+
+        _adder.Add(new PlaceBuildingCommand(gridPos, _prefabToBuild, hit.point.y, _playerID.ID, selectionManager.Highlights.ToArray()));
+
+        selectionManager.Build(hit.point);
+
+        Debug.Log($"hit {hit.point}");
+
         BuildingGridManager.Instance.OccupyArea(gridPos, sizeX, sizeZ);
 
         Cancel();
     }
 
-    private bool IsPlayerCanPayPrice()
+    private bool TryPlayerPayPrice()
     {
         var component = (PlacableBuildingComponent)_prefabToBuild.GetComponent<ProtoUnityAuthoring>()
             .Components
@@ -136,7 +144,11 @@ public class BuildingPlacementController : IProtoInitService
             if (p.ID != _playerID.ID) continue;
 
             ref var inv = ref aspect.Inventories.Get(player);
-            return inv.Money >= component.Price;
+            var canPay = inv.Money >= component.Price;
+            Debug.Log($"Current money: {inv.Money}, current price: {component.Price}, {canPay}");
+            if (canPay)
+                inv.Money -= component.Price;
+            return canPay;
         }
         return false;
     }

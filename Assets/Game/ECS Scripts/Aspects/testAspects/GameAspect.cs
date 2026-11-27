@@ -2,6 +2,8 @@ using UnityEngine;
 using Leopotam.EcsProto;
 using Leopotam.EcsProto.QoL;
 using Leopotam.EcsProto.Unity;
+using JetBrains.Annotations;
+using System.Collections.Generic;
 
 public class GameAspect : ProtoAspectInject
 {
@@ -12,12 +14,14 @@ public class GameAspect : ProtoAspectInject
 
     public ProtoPool<WarehouseComponent> WarehousePool;
     public ProtoPool<PlacableBuildingComponent> PlacableBuildingPool;
+    public ProtoPool<InBuildingProcessTagComponent> InBuildingProcessTagPool;
 
     public ProtoPool<PlayerTagComponent> Players;
     public ProtoPool<PlayerInventoryComponent> Inventories;
     public ProtoPool<OwnerComponent> OwnerComponents;
 
     public ProtoIt PlayerIterator = new(new[] { typeof(PlayerTagComponent), typeof(PlayerInventoryComponent) });
+    public ProtoIt InBuildingProcessIterator = new(new[] { typeof(InBuildingProcessTagComponent) });
 }
 
 [ProtoUnityAuthoring]
@@ -25,6 +29,16 @@ public struct PositionComponent
 {
     public float X;
     public float Y;
+}
+
+[ProtoUnityAuthoring]
+public struct InBuildingProcessTagComponent 
+{
+    public float ProcessTime;
+    public float CurrentProgress;
+    public float TimeForOneBuilder;
+    public bool isBuildersCame;
+    public ProtoPackedEntityWithWorld[] Builders;
 }
 
 [ProtoUnityAuthoring]

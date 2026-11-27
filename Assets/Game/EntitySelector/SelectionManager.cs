@@ -1,6 +1,7 @@
 using Leopotam.EcsProto;
 using Leopotam.EcsProto.QoL;
 using System.Collections.Generic;
+using System.Drawing;
 using UnityEngine;
 using static UnityEngine.EventSystems.EventTrigger;
 
@@ -29,6 +30,8 @@ public class SelectionManager
     public void AddHighlight(ProtoPackedEntityWithWorld packed)
     {
         if (!packed.TryUnpack(out _, out var e)) return;
+
+        if (_updateAspect.HasCommandTagPool.Has(e)) return;
 
         if (!_updateAspect.HighlightedTagPool.Has(e))
         {
@@ -72,6 +75,27 @@ public class SelectionManager
     public void MoveTo(Vector3 point)
     {
         foreach (var e in _highlights)
+        {
+            e.TryUnpack(out var _, out var entity);
+            if (!_updateAspect.HasCommandTagPool.Has(entity))
+            {
+                ref var comm = ref _updateAspect.HasCommandTagPool.Add(entity);
+                comm.CommandType = CommandType.MoveTo;
+            }
+
             _adder.Add(new MoveEntityCommand(e, point, _playerID.ID));
+        }
+    }
+
+    public void Build(Vector3 buildingPoint)
+    {
+        foreach (var e in _highlights)
+        {
+            e.TryUnpack(out var _, out var entity);
+            ref var comm = ref _updateAspect.HasCommandTagPool.Add(entity);
+            comm.CommandType = CommandType.Build;
+
+            _adder.Add(new MoveEntityCommand(e, buildingPoint, _playerID.ID));
+        }
     }
 }

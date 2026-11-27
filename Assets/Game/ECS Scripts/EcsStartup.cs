@@ -50,7 +50,8 @@ public sealed class EcsStartup : MonoBehaviour
             .AddSystem(new ProductionSystem())
             .AddSystem(new ConsumptionSystem())
 
-            .AddSystem(new OppositionAISystem());
+            .AddSystem(new OppositionAISystem())
+            .AddSystem(new BuildingProcessSystem());
 
         CreatePlayer(1);
         CreatePlayer(2);

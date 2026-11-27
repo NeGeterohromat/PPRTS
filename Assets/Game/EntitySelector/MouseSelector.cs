@@ -1,6 +1,7 @@
 using Leopotam.EcsProto;
 using Leopotam.EcsProto.QoL;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
 public class MouseSelector : MonoBehaviour, IProtoInitService
@@ -50,6 +51,10 @@ public class MouseSelector : MonoBehaviour, IProtoInitService
     private void Update()
     {
         if (Mouse.current == null) return;
+
+        if (!_multiSelection.IsSelecting)
+            if (EventSystem.current.IsPointerOverGameObject()) 
+                return;
 
         Vector2 mousePosition = Mouse.current.position.ReadValue();
         Ray ray = _mainCamera.ScreenPointToRay(mousePosition);

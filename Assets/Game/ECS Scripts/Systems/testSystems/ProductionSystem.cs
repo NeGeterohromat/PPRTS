@@ -1,17 +1,19 @@
 ﻿using Leopotam.EcsProto;
 using Leopotam.EcsProto.QoL;
+using Leopotam.EcsProto.Unity;
 using UnityEngine;
 
 public class ProductionSystem : IProtoInitSystem, IProtoRunSystem
 {
     [DI] private GameAspect _aspect;
+    [DI] private UnityUpdateAspect _updateAspect;
     private ProtoIt _producers;
     private ProtoIt _players;
     [DI] private ThisPlayerID playerID;
 
     public void Init(IProtoSystems systems)
     {
-        _producers = new ProtoIt(new[] { typeof(ProductionComponent), typeof(BuildingHealthComponent) });
+        _producers = new ProtoIt(new[] { typeof(ProductionComponent), typeof(BuildingHealthComponent), typeof(OwnerComponent) });
         _producers.Init(systems.World());
 
         _players = new ProtoIt(new[] { typeof(PlayerTagComponent), typeof(PlayerInventoryComponent) });
@@ -24,6 +26,8 @@ public class ProductionSystem : IProtoInitSystem, IProtoRunSystem
 
         foreach (ProtoEntity entity in _producers)
         {
+            if (_aspect.InBuildingProcessTagPool.Has(entity)) continue;
+
             ref var prod = ref _aspect.Productions.Get(entity);
             ref var health = ref _aspect.BuildingHealths.Get(entity);
 
@@ -38,7 +42,8 @@ public class ProductionSystem : IProtoInitSystem, IProtoRunSystem
                 foreach (var player in _players)
                 {
                     ref var p = ref _aspect.Players.Get(player);
-                    if (p.ID != playerID.ID) continue;
+                    ref var owner = ref _aspect.OwnerComponents.Get(entity);
+                    if (p.ID != owner.OwnerID) continue;
 
                     ref var inv = ref _aspect.Inventories.Get(player);
 

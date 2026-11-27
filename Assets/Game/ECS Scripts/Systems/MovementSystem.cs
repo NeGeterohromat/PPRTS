@@ -22,6 +22,11 @@ public class MovementSystem : IProtoRunSystem
             {
                 // Дошли до конца
                 _aspect.MovementGoalPool.Del(entity);
+
+                ref var comm = ref _updateAspect.HasCommandTagPool.Get(entity);
+                if (comm.CommandType == CommandType.MoveTo)
+                    _updateAspect.HasCommandTagPool.Del(entity);
+
                 continue;
             }
 

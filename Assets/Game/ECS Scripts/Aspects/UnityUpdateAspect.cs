@@ -12,6 +12,7 @@ public class UnityUpdateAspect : ProtoAspectInject
     public ProtoPool<GameObjectComponent> GameObjectPool;
     public ProtoPool<HighlightedTagComponent> HighlightedTagPool;
     public ProtoPool<UnhighlightEventComponent> UnhighlightEventPool;
+    public ProtoPool<HasCommandTagComponent> HasCommandTagPool;
 
     public ProtoIt TransformUpdateIterator = new(new[]
         {
@@ -30,6 +31,9 @@ public class UnityUpdateAspect : ProtoAspectInject
             typeof(OwnerComponent),
             typeof(TransformDataComponent)
         });
+    public ProtoItExc CommandFreeVisibleUnitsIterator = new(It.Inc<VisibleByCameraTagComponent, OwnerComponent, TransformDataComponent>(), 
+        It.Exc<HasCommandTagComponent>());
+    public ProtoIt HasCommandUnitIterator = new(new[] { typeof(HasCommandTagComponent) });
     public ProtoIt HighlightedTagIterator = new(new[]
     {
         typeof(HighlightedTagComponent),
@@ -43,6 +47,10 @@ public class UnityUpdateAspect : ProtoAspectInject
         });
 }
 
+public struct HasCommandTagComponent 
+{
+    public CommandType CommandType;
+}
 public struct VisibleByCameraTagComponent { } // Близко ли камера
 
 public struct NeedTransformUpdateEventComponent { } // А менялась ли вообще позиция объекта

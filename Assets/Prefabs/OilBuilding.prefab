@@ -134,6 +134,7 @@ MonoBehaviour:
   - rid: 2512193038907080767
   - rid: 7766260245532770369
   - rid: 7766260245532770372
+  - rid: 7766260266294575166
   ResourceToProduce: 5
   BaseRate: 5
   CycleTime: 2
@@ -168,6 +169,12 @@ MonoBehaviour:
       type: {class: OwnerComponent, ns: , asm: Assembly-CSharp}
       data:
         OwnerID: 0
+    - rid: 7766260266294575166
+      type: {class: InBuildingProcessTagComponent, ns: , asm: Assembly-CSharp}
+      data:
+        ProcessTime: 0
+        CurrentProgress: 0
+        TimeForOneBuilder: 20
 --- !u!114 &2378954185759228025
 MonoBehaviour:
   m_ObjectHideFlags: 0

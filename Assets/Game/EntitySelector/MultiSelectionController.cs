@@ -78,7 +78,7 @@ public class MultiSelectionController
         Vector2 min = Vector2.Min(_startPosition, _endPosition);
         Vector2 max = Vector2.Max(_startPosition, _endPosition);
 
-        foreach (var entity in _updateAspect.VisibleEntityIterator)
+        foreach (var entity in _updateAspect.CommandFreeVisibleUnitsIterator)
         {
             ref var transformComponent = ref _updateAspect.TransformDataPool.Get(entity);
             Vector3 screenPosition = _mainCamera.WorldToScreenPoint(transformComponent.Position);

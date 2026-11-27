@@ -147,6 +147,7 @@ MonoBehaviour:
   - rid: 7766260245532770367
   - rid: 7766260245532770370
   - rid: 7766260245532770373
+  - rid: 7766260266294575167
   references:
     version: 2
     RefIds:
@@ -174,3 +175,9 @@ MonoBehaviour:
       type: {class: OwnerComponent, ns: , asm: Assembly-CSharp}
       data:
         OwnerID: 0
+    - rid: 7766260266294575167
+      type: {class: InBuildingProcessTagComponent, ns: , asm: Assembly-CSharp}
+      data:
+        ProcessTime: 0
+        CurrentProgress: 0
+        TimeForOneBuilder: 5
