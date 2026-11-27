@@ -1,4 +1,4 @@
-using Leopotam.EcsProto;
+﻿using Leopotam.EcsProto;
 using Leopotam.EcsProto.QoL;
 using Leopotam.EcsProto.Unity;
 using UnityEngine;
@@ -10,12 +10,11 @@ public sealed class EcsStartup : MonoBehaviour
     private IProtoSystems _systems;
     private InputSystem_Actions actions;
     [SerializeField] private MouseSelector mouseSelector;
+    [SerializeField] private UIEvents uiEvents;
 
     private void Awake()
     {
         ProtoWorld world = new ProtoWorld(new BaseAspect());
-
-        var playerID = new ThisPlayerID() { ID = 1 };
 
         CommandQueue fullQueue = new CommandQueue();
         InstanceQueue = fullQueue; 
@@ -26,49 +25,35 @@ public sealed class EcsStartup : MonoBehaviour
 
         _systems = new ProtoSystems(world)
             .AddModule(new AutoInjectModule(true))
-            .AddService(playerID)
-            .AddService(adder, typeof(ICommandAdder))
-            .AddService(popper, typeof(ICommandPopper))
+            .AddService(adder,typeof(ICommandAdder))
+            .AddService(popper,typeof(ICommandPopper))
             .AddService(actions, typeof(InputSystem_Actions))
-            .AddService(mouseSelector)
-            .InitHere<MouseSelector>()
-            .AddService(new SelectionManager())
-            .AddService(new MultiSelectionController())
-            .AddService(new ObjectSelectionController())
-            .AddService(new BuildingPlacementController())
-            .InitHere<BuildingPlacementController>()
-            .AddService(new BuildingData())
-            .AddService(new PathfindingService())
-            .AddService(new BuildingEvents())
-            .AddModule(new MovementModule())
+            .AddService(uiEvents)
+            //.AddService(mouseSelector)
             .AddModule(new UnityModule())
             .AddModule(new CameraMovementModule())
             .AddModule(new CubeRotationModule())
             .AddModule(new UnityUpdateModule())
 
-
             .AddSystem(new ProductionSystem())
             .AddSystem(new ConsumptionSystem())
+            .AddSystem(mouseSelector);
 
-            .AddSystem(new OppositionAISystem());
 
-        CreatePlayer(1);
-        CreatePlayer(2);
+        CreatePlayer();
         _systems.Init();
-
-        PrefabDatabase.Init();
+        //mouseSelector.Init(_systems);
     }
 
-    private void CreatePlayer(int id)
+    private void CreatePlayer()
     {
         var aspect = _systems.World().Aspect<GameAspect>();
         ref var tag = ref aspect.Players.NewEntity(out var player);
         ref var inv = ref aspect.Inventories.Add(player);
-        tag.ID = id;
         inv.Wood = 0;
         inv.Coal = 0;
         inv.Food = 0;
-        Debug.Log($"Игрок {id} создан");
+        Debug.Log("Игрок создан");
     }
 
     private void Update() => _systems?.Run();
@@ -78,9 +63,4 @@ public sealed class EcsStartup : MonoBehaviour
         _systems?.Destroy();
         _systems = null;
     }
-}
-
-public struct ThisPlayerID
-{
-    public int ID;
 }

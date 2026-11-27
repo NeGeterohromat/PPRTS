@@ -1,22 +1,26 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
-using TMPro; 
+using TMPro;
 
 public class BuildingUIController : MonoBehaviour
 {
     public static BuildingUIController Instance { get; private set; }
 
-    [Header("������")]
+    [Header("Панели")]
     public GameObject ConstructionPanel;
     public GameObject DetailsPanel;
 
-    [Header("������")]
+    [Header("Префабы зданий")]
+    public GameObject OilRigPrefab;
+    public GameObject GasRigPrefab;
+
+    [Header("Ссылки")]
     public MouseSelector mouseSelector;
 
-    [Header("������ ������ ������� (TMP)")]
-    public TextMeshProUGUI TitleText;       
-    public TextMeshProUGUI ResourceTypeText; 
-    public TextMeshProUGUI ProductionRateText; 
+    [Header("Тексты панели деталей (TMP)")]
+    public TextMeshProUGUI TitleText;
+    public TextMeshProUGUI ResourceTypeText;
+    public TextMeshProUGUI ProductionRateText;
 
     private GameObject _currentlySelectedPrefab;
 
@@ -33,14 +37,14 @@ public class BuildingUIController : MonoBehaviour
 
     public void SelectOilRig()
     {
-        _currentlySelectedPrefab = PrefabDatabase.GetPrefab<BuildingType>((int)BuildingType.OilStation);
-        ShowDetails("�������� �����", "������ �����", "120/�");
+        _currentlySelectedPrefab = OilRigPrefab;
+        ShowDetails("Нефтяная вышка", "Добыча нефти", "120/ч");
     }
 
     public void SelectGasRig()
     {
-        _currentlySelectedPrefab = PrefabDatabase.GetPrefab<BuildingType>((int)BuildingType.GasStation);
-        ShowDetails("������� �����", "������ ����", "90/�");
+        _currentlySelectedPrefab = GasRigPrefab;
+        ShowDetails("Газовая вышка", "Добыча газа", "90/ч");
     }
 
     public void ShowDetails(string title, string resourceType, string rate)

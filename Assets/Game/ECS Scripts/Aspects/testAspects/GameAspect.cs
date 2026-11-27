@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using Leopotam.EcsProto;
 using Leopotam.EcsProto.QoL;
 using Leopotam.EcsProto.Unity;

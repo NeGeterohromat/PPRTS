@@ -1,4 +1,4 @@
-using Leopotam.EcsProto;
+﻿using Leopotam.EcsProto;
 using Leopotam.EcsProto.QoL;
 using Leopotam.EcsProto.Unity;
 using System;

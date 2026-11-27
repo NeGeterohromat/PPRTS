@@ -1,4 +1,4 @@
-using Leopotam.EcsProto.QoL;
+﻿using Leopotam.EcsProto.QoL;
 using UnityEngine;
 
 public class BaseAspect : ProtoAspectInject
